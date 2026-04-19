@@ -1,0 +1,12 @@
+{
+  "name": "content-analyzer",
+  "private": true,
+  "workspaces": ["apps/api", "apps/web", "packages/types"],
+  "scripts": {
+    "dev": "concurrently -n api,web,processor -c blue,green,yellow \"npm run dev -w apps/api\" \"npm run dev -w apps/web\" \"cd apps/processor && uvicorn main:app --reload --port 8001\"",
+    "build": "npm run build -w packages/types && npm run build -w apps/api && npm run build -w apps/web"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
