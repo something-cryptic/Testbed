@@ -63,16 +63,20 @@ async function callProcessor(posts: NormalizedPost[]): Promise<ProcessorResult |
 export async function analyzeChannel(
   posts: NormalizedPost[],
   channelAnalytics: ChannelAnalytics,
-  platform: string,
+  platforms: string | string[],
 ): Promise<AnalysisResult> {
+  const platformList = Array.isArray(platforms) ? platforms : [platforms]
+  const isMultiPlatform = platformList.length > 1
+
   // Try processor first; fall back gracefully
   const processed = await callProcessor(posts)
 
   const userMessage = JSON.stringify(
     {
-      platform,
+      platforms: platformList,
       channelAnalytics,
       posts: posts.slice(0, 30).map((p) => ({
+        platform: p.platform,
         title: p.title,
         publishedAt: p.publishedAt,
         tags: p.tags.slice(0, 10),
@@ -85,13 +89,21 @@ export async function analyzeChannel(
     2,
   )
 
+  const crossPlatformInstruction = isMultiPlatform
+    ? 'This creator is active on both YouTube and Instagram. ' +
+      'In crossPlatformOpportunities identify: which content topics perform well on both vs only one platform, ' +
+      'how YouTube content could be adapted for Instagram Reels, and where the creator is missing ' +
+      'cross-promotion opportunities. Be specific with titles, topics, and numbers from the data.'
+    : 'crossPlatformOpportunities should be an empty array since only one platform is connected.'
+
   const response = await client.messages.create({
     model: 'claude-opus-4-6',
     max_tokens: 4096,
     system:
-      'You are a social media growth strategist with deep expertise in YouTube analytics. ' +
+      'You are a social media growth strategist with deep expertise in YouTube and Instagram analytics. ' +
       'Analyze this creator\'s data and return ONLY a JSON object matching the AnalysisResult interface. ' +
       'Be specific — reference actual titles, numbers, and dates from their data. ' +
+      `${crossPlatformInstruction} ` +
       'Do not wrap in markdown.',
     messages: [{ role: 'user', content: userMessage }],
   })

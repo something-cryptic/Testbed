@@ -47,6 +47,25 @@ export interface AnalysisResult {
   generatedAt: string
 }
 
+export interface InstagramMedia {
+  id: string
+  mediaType: 'IMAGE' | 'VIDEO' | 'CAROUSEL_ALBUM' | 'REEL'
+  caption: string
+  timestamp: string
+  permalink: string
+  thumbnailUrl: string
+  metrics: PostMetrics
+}
+
+export interface InstagramInsights {
+  followerCount: number
+  followsCount: number
+  mediaCount: number
+  profileViews: number
+  websiteClicks: number
+  period: string
+}
+
 export interface User {
   id: string
   email: string

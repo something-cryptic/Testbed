@@ -71,6 +71,28 @@ If the Python processor is not running, the API falls back gracefully and Claude
 4. Click **Run Analysis** to generate AI recommendations
 5. View detailed recommendations on the Recommendations page
 
+## Adding Instagram
+
+Instagram uses the Meta Graph API with a long-lived token (60-day expiry, auto-refreshable).
+
+### Meta Developer Setup
+
+1. Go to [developers.facebook.com](https://developers.facebook.com) → **My Apps** → **Create App**
+2. Choose **Consumer** app type
+3. Add product: **Instagram Graph API**
+4. Under **Instagram → Basic Display**:
+   - Add OAuth Redirect URI: `http://localhost:8000/auth/instagram/callback`
+   - Add Deauthorize URL and Data Deletion URL (use `http://localhost:8000/webhooks` for local dev)
+5. Add yourself as a test user:
+   **Roles → Test Users → Add**
+6. Connect your Instagram Professional account to the test user
+7. Copy **App ID** and **App Secret** to `.env` as `META_APP_ID` and `META_APP_SECRET`
+
+> **Note:** Instagram Basic Display API requires a **Professional account** (Creator or Business).
+> Switch for free in Instagram → Settings → Account → Switch to Professional Account.
+
+Once set up, click **+ Connect Instagram** on the dashboard. After authorizing, your Instagram posts will appear in the combined feed and the next analysis will include cross-platform insights.
+
 ## Stack
 
 | Layer | Tech |
@@ -79,4 +101,4 @@ If the Python processor is not running, the API falls back gracefully and Claude
 | Frontend | React 18, Vite, Tailwind CSS, Recharts, React Router |
 | Processor | Python, FastAPI, uvicorn |
 | AI | Claude (claude-opus-4-6) |
-| Auth | Google OAuth 2.0 |
+| Auth | Google OAuth 2.0, Meta OAuth 2.0 |

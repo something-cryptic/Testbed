@@ -120,6 +120,27 @@ export function getPlatformTokens(
   }
 }
 
+export function getConnectedPlatforms(userId: string): ConnectedPlatform[] {
+  const rows = db
+    .prepare('SELECT * FROM connected_platforms WHERE user_id = ?')
+    .all(userId) as {
+      id: string
+      user_id: string
+      platform: string
+      access_token: string
+      refresh_token: string
+      expires_at: string
+    }[]
+  return rows.map((row) => ({
+    id: row.id,
+    userId: row.user_id,
+    platform: row.platform as ConnectedPlatform['platform'],
+    accessToken: row.access_token,
+    refreshToken: row.refresh_token,
+    expiresAt: row.expires_at,
+  }))
+}
+
 export function updatePlatformTokens(
   userId: string,
   platform: string,
