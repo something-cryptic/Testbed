@@ -51,6 +51,8 @@ db.exec(`
 
 // ── Migrations (safe to run on every startup) ────────────────────────────────
 try { db.exec(`ALTER TABLE users ADD COLUMN google_id TEXT`) } catch { /* already exists */ }
+try { db.exec(`ALTER TABLE users ADD COLUMN name TEXT`) } catch { /* already exists */ }
+try { db.exec(`ALTER TABLE users ADD COLUMN avatar_url TEXT`) } catch { /* already exists */ }
 
 // Add unique index on connected_platforms(user_id, platform) if the table was
 // created before this constraint existed. The ON CONFLICT upsert requires it.
@@ -66,28 +68,28 @@ try {
 
 // ── Users ────────────────────────────────────────────────────────────────────
 
+type UserRow = { id: string; google_id: string | null; email: string; name: string | null; avatar_url: string | null; created_at: string }
+
+function rowToUser(row: UserRow): User {
+  return { id: row.id, email: row.email, name: row.name ?? null, avatarUrl: row.avatar_url ?? null, createdAt: row.created_at }
+}
+
 export function getUser(id: string): User | undefined {
-  const row = db.prepare('SELECT * FROM users WHERE id = ?').get(id) as
-    | { id: string; google_id: string | null; email: string; created_at: string }
-    | undefined
+  const row = db.prepare('SELECT * FROM users WHERE id = ?').get(id) as UserRow | undefined
   if (!row) return undefined
-  return { id: row.id, email: row.email, createdAt: row.created_at }
+  return rowToUser(row)
 }
 
 export function getUserByGoogleId(googleId: string): User | undefined {
-  const row = db.prepare('SELECT * FROM users WHERE google_id = ?').get(googleId) as
-    | { id: string; google_id: string; email: string; created_at: string }
-    | undefined
+  const row = db.prepare('SELECT * FROM users WHERE google_id = ?').get(googleId) as UserRow | undefined
   if (!row) return undefined
-  return { id: row.id, email: row.email, createdAt: row.created_at }
+  return rowToUser(row)
 }
 
 export function getUserByEmail(email: string): User | undefined {
-  const row = db.prepare('SELECT * FROM users WHERE email = ?').get(email) as
-    | { id: string; google_id: string | null; email: string; created_at: string }
-    | undefined
+  const row = db.prepare('SELECT * FROM users WHERE email = ?').get(email) as UserRow | undefined
   if (!row) return undefined
-  return { id: row.id, email: row.email, createdAt: row.created_at }
+  return rowToUser(row)
 }
 
 /**
@@ -95,19 +97,21 @@ export function getUserByEmail(email: string): User | undefined {
  * email (handles accounts that existed before google_id was stored).
  * Creates a new user if neither matches.
  */
-export function upsertGoogleUser(id: string, googleId: string, email: string): User {
+export function upsertGoogleUser(
+  id: string,
+  googleId: string,
+  email: string,
+  name: string | null = null,
+  avatarUrl: string | null = null,
+): User {
   const createdAt = new Date().toISOString()
 
   // 1. Lookup by google_id — most reliable
-  let row = db.prepare('SELECT * FROM users WHERE google_id = ?').get(googleId) as
-    | { id: string; email: string; created_at: string }
-    | undefined
+  let row = db.prepare('SELECT * FROM users WHERE google_id = ?').get(googleId) as UserRow | undefined
 
   // 2. Fall back to email for accounts that predate google_id storage
   if (!row) {
-    row = db.prepare('SELECT * FROM users WHERE email = ?').get(email) as
-      | { id: string; email: string; created_at: string }
-      | undefined
+    row = db.prepare('SELECT * FROM users WHERE email = ?').get(email) as UserRow | undefined
 
     if (row) {
       // Backfill google_id so future lookups are by google_id
@@ -116,15 +120,17 @@ export function upsertGoogleUser(id: string, googleId: string, email: string): U
   }
 
   if (row) {
-    return { id: row.id, email: row.email, createdAt: row.created_at }
+    // Always refresh name and avatarUrl from Google in case they changed
+    db.prepare('UPDATE users SET name = ?, avatar_url = ? WHERE id = ?').run(name, avatarUrl, row.id)
+    return rowToUser({ ...row, name, avatar_url: avatarUrl })
   }
 
   // 3. New user
   db.prepare(
-    'INSERT INTO users (id, google_id, email, created_at) VALUES (?, ?, ?, ?)',
-  ).run(id, googleId, email, createdAt)
+    'INSERT INTO users (id, google_id, email, name, avatar_url, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+  ).run(id, googleId, email, name, avatarUrl, createdAt)
 
-  return { id, email, createdAt: createdAt }
+  return { id, email, name, avatarUrl, createdAt }
 }
 
 // ── DEBUG — remove before launch ──────────────────────────────────────────────

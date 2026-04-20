@@ -185,7 +185,9 @@ router.get('/:userId/profile', async (req: Request, res: Response) => {
       : user.email
 
     res.json({
+      name: user.name ?? null,
       email: displayEmail,
+      avatarUrl: user.avatarUrl ?? null,
       connectedPlatforms,
       lastHolisticAnalysis: lastAnalyzed['all'] ?? null,
     })

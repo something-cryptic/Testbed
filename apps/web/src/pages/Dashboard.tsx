@@ -18,7 +18,9 @@ interface PlatformProfile {
 }
 
 interface UserProfile {
+  name: string | null
   email: string | null
+  avatarUrl: string | null
   connectedPlatforms: PlatformProfile[]
   lastHolisticAnalysis: string | null
 }
@@ -82,7 +84,12 @@ export default function Dashboard({ userId }: Props) {
         <div className="absolute top-1/2 -right-48 w-[500px] h-[500px] rounded-full bg-fuchsia-900/15 blur-3xl" />
       </div>
 
-      <UserHeader email={profile?.email ?? null} onLogout={logout} />
+      <UserHeader
+        name={profile?.name ?? null}
+        email={profile?.email ?? null}
+        avatarUrl={profile?.avatarUrl ?? null}
+        onLogout={logout}
+      />
 
       <main className="relative max-w-3xl mx-auto px-4 py-8 flex flex-col gap-6">
         {error && (

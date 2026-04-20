@@ -7,6 +7,7 @@ const SCOPES = [
   'https://www.googleapis.com/auth/youtube.readonly',
   'https://www.googleapis.com/auth/yt-analytics.readonly',
   'https://www.googleapis.com/auth/userinfo.email',
+  'https://www.googleapis.com/auth/userinfo.profile',
   'openid',
 ]
 
@@ -50,13 +51,15 @@ export async function exchangeCode(
   const userInfo = await oauth2.userinfo.get()
   const googleId = userInfo.data.id
   const email = userInfo.data.email
-  console.log('Step 3: got user email:', email, '| googleId:', googleId)
+  const name = userInfo.data.name ?? null
+  const avatarUrl = userInfo.data.picture ?? null
+  console.log('Step 3: email:', email, '| googleId:', googleId, '| name:', name)
 
   if (!googleId) throw new Error('Could not retrieve Google user ID')
   if (!email) throw new Error('Could not retrieve user email from Google')
 
   console.log('Step 4: saving user to DB...')
-  const user = upsertGoogleUser(uuidv4(), googleId, email)
+  const user = upsertGoogleUser(uuidv4(), googleId, email, name, avatarUrl)
   console.log('Step 4: user saved, id:', user.id)
 
   const accessToken = tokens.access_token ?? ''
