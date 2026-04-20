@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Settings as SettingsIcon, Youtube, Instagram, Unlink } from 'lucide-react'
+import { Settings as SettingsIcon, Youtube, Globe, X } from 'lucide-react'
 
 interface Props {
   userId: string
@@ -20,7 +20,7 @@ interface UserProfile {
 
 function PlatformIcon({ platform }: { platform: string }) {
   if (platform === 'youtube') return <Youtube size={18} className="text-red-400" />
-  if (platform === 'instagram') return <Instagram size={18} className="text-pink-400" />
+  if (platform === 'instagram') return <Globe size={18} className="text-pink-400" />
   return <SettingsIcon size={18} className="text-gray-400" />
 }
 
@@ -95,7 +95,7 @@ export default function Settings({ userId }: Props) {
                   title="Disconnect coming soon"
                   className="flex items-center gap-1.5 text-xs text-violet-400/50 border border-violet-800/40 px-3 py-1.5 rounded-lg cursor-not-allowed"
                 >
-                  <Unlink size={13} />
+                  <X size={13} />
                   Disconnect
                 </button>
               </div>
@@ -110,7 +110,7 @@ export default function Settings({ userId }: Props) {
             className="bg-[#1a1625]/60 border border-dashed border-violet-700/40 hover:border-violet-500/60 rounded-2xl px-5 py-4 flex items-center gap-4 transition-colors group"
           >
             <div className="w-9 h-9 rounded-lg bg-violet-900/30 border border-violet-700/30 flex items-center justify-center">
-              <Instagram size={16} className="text-violet-400 group-hover:text-violet-200 transition-colors" />
+              <Globe size={16} className="text-violet-400 group-hover:text-violet-200 transition-colors" />
             </div>
             <p className="text-sm font-medium text-violet-300/60 group-hover:text-violet-200 transition-colors">
               + Connect Instagram
