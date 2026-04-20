@@ -18,14 +18,24 @@ youtube-analyzer/
 
 ### 1. Environment variables
 
-Copy `.env.example` to `.env` and fill in your credentials:
+Create a `.env` file in the project root with the following variables:
 
 ```env
+# Google / YouTube OAuth
 GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
-ANTHROPIC_API_KEY=...
 REDIRECT_URI=http://localhost:8000/auth/callback
-DATABASE_PATH=./data.db
+
+# Meta / Instagram OAuth
+META_APP_ID=...
+META_APP_SECRET=...
+INSTAGRAM_REDIRECT_URI=http://localhost:8000/auth/instagram/callback
+
+# Anthropic
+ANTHROPIC_API_KEY=...
+
+# App
+DATABASE_PATH=./analyzer.db
 FRONTEND_URL=http://localhost:5173
 ```
 

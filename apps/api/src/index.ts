@@ -1,10 +1,4 @@
-import { fileURLToPath } from 'url'
-import { config } from 'dotenv'
-import { join, dirname } from 'path'
-
-// Load .env from monorepo root
-const __dirname = dirname(fileURLToPath(import.meta.url))
-config({ path: join(__dirname, '../../../.env') })
+import './env.js'
 
 import express from 'express'
 import cors from 'cors'
@@ -12,6 +6,8 @@ import cookieParser from 'cookie-parser'
 import authRouter from './routes/auth.js'
 import videosRouter from './routes/videos.js'
 import analyzeRouter from './routes/analyze.js'
+import usersRouter from './routes/users.js'
+import debugRouter from './routes/debug.js' // TODO: remove before launch
 
 const app = express()
 const PORT = process.env['PORT'] ?? 8000
@@ -25,6 +21,8 @@ app.get('/health', (_req, res) => res.json({ status: 'ok' }))
 app.use('/auth', authRouter)
 app.use('/videos', videosRouter)
 app.use('/analyze', analyzeRouter)
+app.use('/users', usersRouter)
+app.use('/debug', debugRouter) // TODO: remove before launch
 
 app.listen(PORT, () => {
   console.log(`API running on http://localhost:${PORT}`)

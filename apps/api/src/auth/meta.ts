@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid'
-import { createUser, getUserByEmail, savePlatformTokens, updatePlatformTokens, getPlatformTokens } from '../db/index.js'
+import { upsertGoogleUser, savePlatformTokens, updatePlatformTokens, getPlatformTokens } from '../db/index.js'
 import type { User } from '@analyzer/types'
 
 const SCOPES = [
@@ -66,12 +66,9 @@ export async function exchangeCode(
   if (!meRes.ok) throw new Error('Failed to fetch Instagram user info')
   const meData = (await meRes.json()) as { id: string; username: string }
 
-  // 4. Upsert user — use instagram:{id} as a stable email-like identifier
+  // 4. Upsert user — use instagram ID as stable unique key, pseudo-email as identifier
   const pseudoEmail = `instagram:${meData.id}@instagram.local`
-  let user = getUserByEmail(pseudoEmail)
-  if (!user) {
-    user = createUser(uuidv4(), pseudoEmail)
-  }
+  const user = upsertGoogleUser(uuidv4(), `ig:${meData.id}`, pseudoEmail)
 
   // 5. Store tokens (no refresh token for Instagram long-lived tokens)
   savePlatformTokens(uuidv4(), user.id, 'instagram', accessToken, '', expiresAt)

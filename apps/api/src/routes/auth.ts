@@ -2,7 +2,7 @@ import { Router } from 'express'
 import type { Request, Response } from 'express'
 import { generateAuthUrl, exchangeCode } from '../auth/google.js'
 import { generateAuthUrl as generateInstagramAuthUrl, exchangeCode as exchangeInstagramCode } from '../auth/meta.js'
-import { getConnectedPlatforms } from '../db/index.js'
+import { getConnectedPlatforms, clearPlatformTokens } from '../db/index.js'
 
 const router = Router()
 
@@ -71,6 +71,15 @@ router.get('/instagram/callback', async (req: Request, res: Response) => {
     console.error('Instagram OAuth callback error:', err)
     res.status(500).json({ error: 'Instagram authentication failed' })
   }
+})
+
+// ── Logout ────────────────────────────────────────────────────────────────────
+
+router.post('/logout/:userId', (req: Request, res: Response) => {
+  const { userId } = req.params as { userId: string }
+  clearPlatformTokens(userId)
+  res.clearCookie('userId')
+  res.status(200).json({ ok: true })
 })
 
 // ── Connected platforms status ────────────────────────────────────────────────

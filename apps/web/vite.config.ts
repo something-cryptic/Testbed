@@ -15,6 +15,9 @@ export default defineConfig({
       '/auth': 'http://localhost:8000',
       '/videos': 'http://localhost:8000',
       '/analyze': 'http://localhost:8000',
+      '/users': 'http://localhost:8000',
+      '/debug': 'http://localhost:8000',
+      '/health': 'http://localhost:8000',
     },
   },
 })

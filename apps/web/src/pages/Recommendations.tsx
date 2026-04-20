@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import axios from 'axios'
 import type { AnalysisResult, Recommendation } from '@analyzer/types'
 import InsightCard from '../components/InsightCard.tsx'
@@ -19,19 +19,32 @@ const PLATFORM_CATEGORIES: Record<string, PlatformFilter> = {
   content: 'all',
 }
 
+const ANALYSIS_LABELS: Record<string, string> = {
+  youtube: 'YouTube Analysis',
+  instagram: 'Instagram Analysis',
+  all: 'Holistic Analysis — All Platforms',
+}
+
 export default function Recommendations({ userId }: Props) {
   const navigate = useNavigate()
+  const location = useLocation()
+  const platformContext = (location.state as { platform?: string } | null)?.platform ?? 'all'
+
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null)
   const [loading, setLoading] = useState(true)
   const [platformFilter, setPlatformFilter] = useState<PlatformFilter>('all')
 
   useEffect(() => {
     axios
-      .get(`/analyze/${userId}/latest`)
-      .then(({ data }) => setAnalysis(data as AnalysisResult))
+      .get(`/analyze/${userId}/latest?platform=${platformContext}`)
+      .then(({ data }) => {
+        const result = (data as { analysis: AnalysisResult | null }).analysis
+        if (!result) navigate('/dashboard')
+        else setAnalysis(result)
+      })
       .catch(() => navigate('/dashboard'))
       .finally(() => setLoading(false))
-  }, [userId])
+  }, [userId, platformContext])
 
   if (loading) {
     return (
@@ -53,6 +66,7 @@ export default function Recommendations({ userId }: Props) {
   const highImpact = filtered.filter((r) => r.expectedImpact === 'high')
   const rest = filtered.filter((r) => r.expectedImpact !== 'high')
   const hasCrossPlatform = analysis.crossPlatformOpportunities.length > 0
+  const analysisLabel = ANALYSIS_LABELS[platformContext] ?? 'Analysis'
 
   return (
     <div className="min-h-screen">
@@ -64,7 +78,7 @@ export default function Recommendations({ userId }: Props) {
           >
             ← Dashboard
           </button>
-          <span className="font-semibold">Recommendations</span>
+          <span className="font-semibold">{analysisLabel}</span>
           <span className="text-xs text-gray-600">
             {new Date(analysis.generatedAt).toLocaleDateString()}
           </span>
@@ -73,7 +87,7 @@ export default function Recommendations({ userId }: Props) {
 
       <main className="max-w-6xl mx-auto px-4 py-8 flex flex-col gap-10">
 
-        {/* Cross-platform opportunities — shown first as premium insight */}
+        {/* Cross-platform opportunities */}
         {hasCrossPlatform && (
           <section>
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -92,29 +106,29 @@ export default function Recommendations({ userId }: Props) {
           </section>
         )}
 
-        {/* Platform filter tabs */}
-        <div className="flex items-center gap-2">
-          {(['all', 'youtube', 'instagram'] as PlatformFilter[]).map((f) => (
-            <button
-              key={f}
-              onClick={() => setPlatformFilter(f)}
-              className={`text-sm px-3 py-1.5 rounded-lg capitalize transition-colors ${
-                platformFilter === f
-                  ? 'bg-gray-700 text-white font-medium'
-                  : 'text-gray-500 hover:text-gray-300'
-              }`}
-            >
-              {f === 'all' ? 'All' : f === 'youtube' ? 'YouTube' : 'Instagram'}
-            </button>
-          ))}
-        </div>
+        {/* Platform filter tabs — only show for holistic analyses */}
+        {platformContext === 'all' && (
+          <div className="flex items-center gap-2">
+            {(['all', 'youtube', 'instagram'] as PlatformFilter[]).map((f) => (
+              <button
+                key={f}
+                onClick={() => setPlatformFilter(f)}
+                className={`text-sm px-3 py-1.5 rounded-lg capitalize transition-colors ${
+                  platformFilter === f
+                    ? 'bg-gray-700 text-white font-medium'
+                    : 'text-gray-500 hover:text-gray-300'
+                }`}
+              >
+                {f === 'all' ? 'All' : f === 'youtube' ? 'YouTube' : 'Instagram'}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Quick wins */}
         {analysis.quickWins.length > 0 && platformFilter === 'all' && (
           <section>
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              ⚡ Quick Wins
-            </h2>
+            <h2 className="text-lg font-semibold mb-4">⚡ Quick Wins</h2>
             <ul className="flex flex-col gap-2">
               {analysis.quickWins.map((w, i) => (
                 <li key={i} className="bg-gray-900 rounded-xl px-4 py-3 text-sm text-gray-300">

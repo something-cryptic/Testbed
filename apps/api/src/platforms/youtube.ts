@@ -166,26 +166,39 @@ export class YouTubePlatform extends BasePlatform {
   }
 
   async getChannelAnalytics(userId: string): Promise<ChannelAnalytics> {
-    const auth = await this.getAuthClient(userId)
-    const youtubeAnalytics = google.youtubeAnalytics({ version: 'v2', auth })
+    const defaultAnalytics: ChannelAnalytics = {
+      totalViews: 0,
+      totalWatchTime: 0,
+      subscribersGained: 0,
+      subscribersLost: 0,
+      period: 'last_90_days',
+    }
 
-    const endDate = new Date().toISOString().split('T')[0]!
-    const startDate = new Date(Date.now() - 90 * 86400_000).toISOString().split('T')[0]!
+    try {
+      const auth = await this.getAuthClient(userId)
+      const youtubeAnalytics = google.youtubeAnalytics({ version: 'v2', auth })
 
-    const res = await youtubeAnalytics.reports.query({
-      ids: 'channel==MINE',
-      startDate,
-      endDate,
-      metrics: 'views,estimatedMinutesWatched,subscribersGained,subscribersLost',
-    })
+      const endDate = new Date().toISOString().split('T')[0]!
+      const startDate = new Date(Date.now() - 90 * 86400_000).toISOString().split('T')[0]!
 
-    const row = res.data.rows?.[0] ?? [0, 0, 0, 0]
-    return {
-      totalViews: Number(row[0] ?? 0),
-      totalWatchTime: Number(row[1] ?? 0),
-      subscribersGained: Number(row[2] ?? 0),
-      subscribersLost: Number(row[3] ?? 0),
-      period: `${startDate} to ${endDate}`,
+      const res = await youtubeAnalytics.reports.query({
+        ids: 'channel==MINE',
+        startDate,
+        endDate,
+        metrics: 'views,estimatedMinutesWatched,subscribersGained,subscribersLost',
+      })
+
+      const row = res.data.rows?.[0] ?? [0, 0, 0, 0]
+      return {
+        totalViews: Number(row[0] ?? 0),
+        totalWatchTime: Number(row[1] ?? 0),
+        subscribersGained: Number(row[2] ?? 0),
+        subscribersLost: Number(row[3] ?? 0),
+        period: `${startDate} to ${endDate}`,
+      }
+    } catch (err) {
+      console.warn('getChannelAnalytics failed, using defaults:', err instanceof Error ? err.message : err)
+      return defaultAnalytics
     }
   }
 }
