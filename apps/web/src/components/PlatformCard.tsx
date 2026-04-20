@@ -95,12 +95,12 @@ export default function PlatformCard({
       {/* Info */}
       <div className="flex-1 min-w-0">
         <p className="font-semibold text-violet-100 truncate">{channelName}</p>
-        <div className="flex items-center gap-4 mt-1 text-sm text-violet-400/60">
+        <div className="flex items-center gap-4 mt-1 text-sm text-violet-300">
           <span>{fmt(subscriberCount)} {config.statLabel}</span>
           <span>{fmt(videoCount)} {config.postLabel}</span>
         </div>
         {lastAnalyzedStr && (
-          <p className="text-xs text-violet-500/50 mt-1">Last analyzed {lastAnalyzedStr}</p>
+          <p className="text-xs text-violet-300/70 mt-1">Last analyzed {lastAnalyzedStr}</p>
         )}
       </div>
 

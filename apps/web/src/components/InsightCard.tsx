@@ -31,9 +31,9 @@ export default function InsightCard({ rec }: Props) {
         </span>
       </div>
       <p className="font-semibold text-sm leading-snug text-violet-100">{rec.finding}</p>
-      <p className="text-sm text-violet-300/60 leading-relaxed">{rec.action}</p>
+      <p className="text-sm text-violet-200 leading-relaxed">{rec.action}</p>
       {rec.supportingData && (
-        <p className="text-xs text-violet-500/50 italic">{rec.supportingData}</p>
+        <p className="text-xs text-violet-300/80 italic">{rec.supportingData}</p>
       )}
     </div>
   )

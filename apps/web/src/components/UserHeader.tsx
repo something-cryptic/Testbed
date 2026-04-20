@@ -21,11 +21,11 @@ export default function UserHeader({ email, onLogout }: Props) {
             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-xs font-bold text-white shadow-sm shadow-violet-900/50">
               {initial}
             </div>
-            <span className="text-sm text-violet-300/70 hidden sm:block">{displayName}</span>
+            <span className="text-sm text-violet-200 hidden sm:block">{displayName}</span>
           </div>
           <button
             onClick={onLogout}
-            className="text-sm text-violet-400/60 hover:text-violet-300 transition-colors border border-violet-800/50 hover:border-violet-600/60 px-3 py-1 rounded-lg"
+            className="text-sm text-violet-300 hover:text-violet-100 transition-colors border border-violet-800/50 hover:border-violet-600/60 px-3 py-1 rounded-lg"
           >
             Sign out
           </button>

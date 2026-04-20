@@ -80,14 +80,14 @@ export default function Recommendations({ userId }: Props) {
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
           <button
             onClick={() => navigate('/dashboard')}
-            className="text-sm text-violet-400/60 hover:text-violet-300 transition-colors flex items-center gap-1"
+            className="text-sm text-violet-300 hover:text-violet-100 transition-colors flex items-center gap-1"
           >
             ← Dashboard
           </button>
           <span className="font-semibold bg-gradient-to-r from-violet-300 to-fuchsia-300 bg-clip-text text-transparent">
             {analysisLabel}
           </span>
-          <span className="text-xs text-violet-500/40">
+          <span className="text-xs text-violet-300/70">
             {new Date(analysis.generatedAt).toLocaleDateString()}
           </span>
         </div>
@@ -105,7 +105,7 @@ export default function Recommendations({ userId }: Props) {
               {analysis.crossPlatformOpportunities.map((opp, i) => (
                 <li
                   key={i}
-                  className="bg-fuchsia-900/15 border border-fuchsia-700/25 rounded-xl px-4 py-3 text-sm text-fuchsia-200/80"
+                  className="bg-fuchsia-900/15 border border-fuchsia-700/25 rounded-xl px-4 py-3 text-sm text-fuchsia-100"
                 >
                   {opp}
                 </li>
@@ -124,7 +124,7 @@ export default function Recommendations({ userId }: Props) {
                 className={`text-sm px-3 py-1.5 rounded-lg capitalize transition-colors ${
                   platformFilter === f
                     ? 'bg-violet-800/60 text-violet-100 font-medium border border-violet-600/50'
-                    : 'text-violet-400/50 hover:text-violet-300 border border-transparent'
+                    : 'text-violet-300 hover:text-violet-100 border border-transparent'
                 }`}
               >
                 {f === 'all' ? 'All' : f === 'youtube' ? 'YouTube' : 'Instagram'}
@@ -139,7 +139,7 @@ export default function Recommendations({ userId }: Props) {
             <h2 className="text-lg font-semibold mb-4 text-violet-100">⚡ Quick Wins</h2>
             <ul className="flex flex-col gap-2">
               {analysis.quickWins.map((w, i) => (
-                <li key={i} className="bg-[#1a1625]/80 border border-violet-800/25 rounded-xl px-4 py-3 text-sm text-violet-200/70">
+                <li key={i} className="bg-[#1a1625]/80 border border-violet-800/25 rounded-xl px-4 py-3 text-sm text-violet-100">
                   {w}
                 </li>
               ))}
@@ -172,7 +172,7 @@ export default function Recommendations({ userId }: Props) {
         )}
 
         {filtered.length === 0 && (
-          <p className="text-violet-500/50 text-sm">No recommendations for this filter.</p>
+          <p className="text-violet-300 text-sm">No recommendations for this filter.</p>
         )}
 
         {/* Content gaps */}
@@ -181,7 +181,7 @@ export default function Recommendations({ userId }: Props) {
             <h2 className="text-lg font-semibold mb-4 text-violet-100">Content Gaps</h2>
             <ul className="flex flex-col gap-2">
               {analysis.contentGaps.map((gap, i) => (
-                <li key={i} className="bg-[#1a1625]/80 border border-violet-800/25 rounded-xl px-4 py-3 text-sm text-violet-200/70">
+                <li key={i} className="bg-[#1a1625]/80 border border-violet-800/25 rounded-xl px-4 py-3 text-sm text-violet-100">
                   {gap}
                 </li>
               ))}
@@ -195,7 +195,7 @@ export default function Recommendations({ userId }: Props) {
             <h2 className="text-lg font-semibold mb-4 text-violet-100">What's Working</h2>
             <ul className="flex flex-col gap-2">
               {analysis.bestPerformingPatterns.map((pattern, i) => (
-                <li key={i} className="bg-[#1a1625]/80 border border-violet-800/25 rounded-xl px-4 py-3 text-sm text-violet-200/70">
+                <li key={i} className="bg-[#1a1625]/80 border border-violet-800/25 rounded-xl px-4 py-3 text-sm text-violet-100">
                   {pattern}
                 </li>
               ))}

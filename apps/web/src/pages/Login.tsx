@@ -17,7 +17,7 @@ export default function Login() {
           <h1 className="text-2xl font-bold tracking-tight text-white">Content Analyzer</h1>
         </div>
 
-        <p className="text-violet-300/70 text-center text-sm leading-relaxed">
+        <p className="text-violet-200 text-center text-sm leading-relaxed">
           Connect your YouTube channel to get AI-powered insights and recommendations.
         </p>
 
@@ -34,7 +34,7 @@ export default function Login() {
           Sign in with Google
         </a>
 
-        <p className="text-xs text-violet-400/40 text-center">
+        <p className="text-xs text-violet-300/60 text-center">
           Read-only access to your YouTube data and analytics.
         </p>
       </div>
