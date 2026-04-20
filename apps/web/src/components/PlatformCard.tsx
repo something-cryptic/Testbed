@@ -43,8 +43,8 @@ function Spinner() {
 const platformConfig = {
   youtube: {
     label: 'YouTube',
-    badgeClass: 'bg-red-600 text-white',
-    buttonClass: 'bg-red-600 hover:bg-red-700 text-white',
+    badgeClass: 'bg-red-500 text-white',
+    buttonClass: 'bg-red-500/90 hover:bg-red-500 text-white shadow-sm shadow-red-900/30',
     Icon: YouTubeIcon,
     statLabel: 'subscribers',
     postLabel: 'videos',
@@ -52,7 +52,7 @@ const platformConfig = {
   instagram: {
     label: 'Instagram',
     badgeClass: 'bg-gradient-to-r from-purple-500 to-pink-500 text-white',
-    buttonClass: 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white',
+    buttonClass: 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white shadow-sm shadow-purple-900/30',
     Icon: InstagramIcon,
     statLabel: 'followers',
     postLabel: 'posts',
@@ -77,13 +77,13 @@ export default function PlatformCard({
     : null
 
   return (
-    <div className="bg-gray-900 rounded-2xl p-6 flex items-center gap-5">
+    <div className="bg-[#1a1625]/80 border border-violet-800/30 rounded-2xl p-6 flex items-center gap-5 hover:border-violet-700/50 transition-all">
       {/* Avatar + platform badge */}
       <div className="relative shrink-0">
         {avatarUrl ? (
-          <img src={avatarUrl} alt={channelName} className="w-14 h-14 rounded-full object-cover" />
+          <img src={avatarUrl} alt={channelName} className="w-14 h-14 rounded-full object-cover ring-2 ring-violet-700/30" />
         ) : (
-          <div className="w-14 h-14 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 text-xl font-bold">
+          <div className="w-14 h-14 rounded-full bg-violet-900/40 border border-violet-700/30 flex items-center justify-center text-violet-300 text-xl font-bold">
             {channelName.charAt(0).toUpperCase()}
           </div>
         )}
@@ -94,13 +94,13 @@ export default function PlatformCard({
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <p className="font-semibold truncate">{channelName}</p>
-        <div className="flex items-center gap-4 mt-1 text-sm text-gray-400">
+        <p className="font-semibold text-violet-100 truncate">{channelName}</p>
+        <div className="flex items-center gap-4 mt-1 text-sm text-violet-400/60">
           <span>{fmt(subscriberCount)} {config.statLabel}</span>
           <span>{fmt(videoCount)} {config.postLabel}</span>
         </div>
         {lastAnalyzedStr && (
-          <p className="text-xs text-gray-600 mt-1">Last analyzed {lastAnalyzedStr}</p>
+          <p className="text-xs text-violet-500/50 mt-1">Last analyzed {lastAnalyzedStr}</p>
         )}
       </div>
 

@@ -1,19 +1,29 @@
 export default function Login() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="bg-gray-900 rounded-2xl p-10 shadow-xl flex flex-col items-center gap-6 w-full max-w-sm">
-        <div className="flex items-center gap-3">
-          <svg className="w-10 h-10 text-red-500" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
-          </svg>
-          <h1 className="text-2xl font-bold tracking-tight">YouTube Analyzer</h1>
+    <div className="min-h-screen flex items-center justify-center bg-[#0f0d1a]">
+      {/* Soft radial glow behind the card */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="w-[500px] h-[500px] rounded-full bg-violet-700/20 blur-3xl" />
+      </div>
+
+      <div className="relative bg-[#1a1625]/90 border border-violet-700/30 rounded-3xl p-10 shadow-2xl shadow-violet-950/50 flex flex-col items-center gap-6 w-full max-w-sm backdrop-blur">
+        {/* Logo mark */}
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shadow-lg shadow-violet-900/50">
+            <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-white">Content Analyzer</h1>
         </div>
-        <p className="text-gray-400 text-center text-sm">
+
+        <p className="text-violet-300/70 text-center text-sm leading-relaxed">
           Connect your YouTube channel to get AI-powered insights and recommendations.
         </p>
+
         <a
           href="/auth/login"
-          className="w-full flex items-center justify-center gap-3 bg-white text-gray-900 font-semibold py-3 px-5 rounded-xl hover:bg-gray-100 transition-colors"
+          className="w-full flex items-center justify-center gap-3 bg-white/95 hover:bg-white text-gray-900 font-semibold py-3 px-5 rounded-xl transition-colors shadow-md"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -23,7 +33,8 @@ export default function Login() {
           </svg>
           Sign in with Google
         </a>
-        <p className="text-xs text-gray-600 text-center">
+
+        <p className="text-xs text-violet-400/40 text-center">
           Read-only access to your YouTube data and analytics.
         </p>
       </div>
