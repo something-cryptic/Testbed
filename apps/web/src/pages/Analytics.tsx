@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { BarChart2 } from 'lucide-react'
+import { ChartBar } from 'lucide-react'
 import axios from 'axios'
 
 interface Props {
@@ -36,7 +36,7 @@ export default function Analytics({ userId }: Props) {
       {platforms.length === 0 ? (
         <div className="flex flex-col items-center gap-4 py-20 text-center">
           <div className="w-16 h-16 rounded-2xl bg-violet-900/30 border border-violet-700/30 flex items-center justify-center">
-            <BarChart2 size={28} className="text-violet-400" />
+            <ChartBar size={28} className="text-violet-400" />
           </div>
           <p className="text-violet-300 font-medium">No platforms connected yet</p>
           <p className="text-sm text-violet-400/60 max-w-xs">
@@ -51,7 +51,7 @@ export default function Analytics({ userId }: Props) {
               className="bg-[#1a1625]/80 border border-violet-800/30 rounded-2xl p-6 flex items-center gap-5"
             >
               <div className="w-12 h-12 rounded-xl bg-violet-900/40 border border-violet-700/30 flex items-center justify-center">
-                <BarChart2 size={20} className="text-violet-400" />
+                <ChartBar size={20} className="text-violet-400" />
               </div>
               <div>
                 <p className="font-semibold text-violet-100 capitalize">

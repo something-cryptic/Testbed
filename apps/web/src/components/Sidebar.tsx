@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import {
   Home,
-  BarChart2,
+  ChartBar,
   Lightbulb,
   Link,
   Settings,
@@ -12,7 +12,7 @@ import {
 
 const NAV_ITEMS = [
   { label: 'Dashboard',           icon: Home,       path: '/dashboard'      },
-  { label: 'Analytics',           icon: BarChart2,  path: '/analytics'      },
+  { label: 'Analytics',           icon: ChartBar,  path: '/analytics'      },
   { label: 'Recommendations',     icon: Lightbulb,  path: '/recommendations'},
   { label: 'Platforms',           icon: Link,       path: '/dashboard'      },
   { label: 'Settings',            icon: Settings,   path: '/settings'       },
@@ -41,7 +41,7 @@ export default function Sidebar({ collapsed, onToggle }: Props) {
       {/* Logo area */}
       <div className={`h-14 flex items-center border-b border-white/5 shrink-0 ${collapsed ? 'justify-center px-0' : 'px-5'}`}>
         <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shrink-0">
-          <BarChart2 size={14} className="text-white" />
+          <ChartBar size={14} className="text-white" />
         </div>
         {!collapsed && (
           <span className="ml-3 font-semibold text-sm bg-gradient-to-r from-violet-300 to-fuchsia-300 bg-clip-text text-transparent whitespace-nowrap overflow-hidden">

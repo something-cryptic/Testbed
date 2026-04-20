@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Settings as SettingsIcon, Youtube, Globe, X } from 'lucide-react'
+import { Settings as SettingsIcon, Play, Globe, X } from 'lucide-react'
 
 interface Props {
   userId: string
@@ -19,7 +19,7 @@ interface UserProfile {
 }
 
 function PlatformIcon({ platform }: { platform: string }) {
-  if (platform === 'youtube') return <Youtube size={18} className="text-red-400" />
+  if (platform === 'youtube') return <Play size={18} className="text-red-400" />
   if (platform === 'instagram') return <Globe size={18} className="text-pink-400" />
   return <SettingsIcon size={18} className="text-gray-400" />
 }
