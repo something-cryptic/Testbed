@@ -48,7 +48,7 @@ export default function Recommendations({ userId }: Props) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0f0d1a] flex items-center justify-center text-violet-400/50">
+      <div className="flex items-center justify-center py-32 text-violet-400/50">
         Loading…
       </div>
     )
@@ -69,31 +69,24 @@ export default function Recommendations({ userId }: Props) {
   const analysisLabel = ANALYSIS_LABELS[platformContext] ?? 'Analysis'
 
   return (
-    <div className="min-h-screen bg-[#0f0d1a]">
-      {/* Ambient glow */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full bg-violet-900/20 blur-3xl" />
-        <div className="absolute bottom-0 -left-48 w-[500px] h-[500px] rounded-full bg-fuchsia-900/15 blur-3xl" />
+    <div>
+      {/* Page title row */}
+      <div className="border-b border-violet-900/40 px-6 h-12 flex items-center justify-between">
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="text-sm text-violet-300 hover:text-violet-100 transition-colors flex items-center gap-1"
+        >
+          ← Dashboard
+        </button>
+        <span className="font-semibold text-sm bg-gradient-to-r from-violet-300 to-fuchsia-300 bg-clip-text text-transparent">
+          {analysisLabel}
+        </span>
+        <span className="text-xs text-violet-300/70">
+          {new Date(analysis.generatedAt).toLocaleDateString()}
+        </span>
       </div>
 
-      <header className="border-b border-violet-900/40 bg-[#0f0d1a]/80 sticky top-0 z-10 backdrop-blur">
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="text-sm text-violet-300 hover:text-violet-100 transition-colors flex items-center gap-1"
-          >
-            ← Dashboard
-          </button>
-          <span className="font-semibold bg-gradient-to-r from-violet-300 to-fuchsia-300 bg-clip-text text-transparent">
-            {analysisLabel}
-          </span>
-          <span className="text-xs text-violet-300/70">
-            {new Date(analysis.generatedAt).toLocaleDateString()}
-          </span>
-        </div>
-      </header>
-
-      <main className="relative max-w-6xl mx-auto px-4 py-8 flex flex-col gap-10">
+      <main className="max-w-6xl mx-auto px-4 py-8 flex flex-col gap-10">
 
         {/* Cross-platform opportunities */}
         {hasCrossPlatform && (
@@ -206,3 +199,4 @@ export default function Recommendations({ userId }: Props) {
     </div>
   )
 }
+
