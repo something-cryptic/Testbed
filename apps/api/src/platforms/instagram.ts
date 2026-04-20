@@ -161,42 +161,53 @@ export class InstagramPlatform extends BasePlatform {
   }
 
   async getChannelAnalytics(userId: string): Promise<ChannelAnalytics> {
-    const token = await this.getToken(userId)
-
-    // 1. Basic account fields
-    const meRes = await this.apiFetch<{
-      followers_count: number
-      follows_count: number
-      media_count: number
-    }>('/me', token, { fields: 'followers_count,follows_count,media_count' })
-
-    // 2. Profile-level insights (last 90 days summed over daily periods)
-    const since = Math.floor((Date.now() - 90 * 86400_000) / 1000).toString()
-    const until = Math.floor(Date.now() / 1000).toString()
-
-    let profileViews = 0
-    let websiteClicks = 0
-    try {
-      const insightRes = await this.apiFetch<{
-        data: { name: string; values: { value: number }[] }[]
-      }>('/me/insights', token, {
-        metric: 'profile_views,website_clicks',
-        period: 'day',
-        since,
-        until,
-      })
-      profileViews = getMetricValue(insightRes.data, 'profile_views')
-      websiteClicks = getMetricValue(insightRes.data, 'website_clicks')
-    } catch {
-      // Business account insights may not be available for all accounts
-    }
-
-    return {
-      totalViews: profileViews,
+    const defaultAnalytics: ChannelAnalytics = {
+      totalViews: 0,
       totalWatchTime: 0,
-      subscribersGained: meRes.followers_count,
+      subscribersGained: 0,
       subscribersLost: 0,
       period: 'last_90_days',
+    }
+
+    try {
+      const token = await this.getToken(userId)
+
+      // 1. Basic account fields
+      const meRes = await this.apiFetch<{
+        followers_count: number
+        follows_count: number
+        media_count: number
+      }>('/me', token, { fields: 'followers_count,follows_count,media_count' })
+
+      // 2. Profile-level insights (last 90 days summed over daily periods)
+      const since = Math.floor((Date.now() - 90 * 86400_000) / 1000).toString()
+      const until = Math.floor(Date.now() / 1000).toString()
+
+      let profileViews = 0
+      try {
+        const insightRes = await this.apiFetch<{
+          data: { name: string; values: { value: number }[] }[]
+        }>('/me/insights', token, {
+          metric: 'profile_views,website_clicks',
+          period: 'day',
+          since,
+          until,
+        })
+        profileViews = getMetricValue(insightRes.data, 'profile_views')
+      } catch {
+        // Business account insights may not be available for all accounts
+      }
+
+      return {
+        totalViews: profileViews,
+        totalWatchTime: 0,
+        subscribersGained: meRes.followers_count,
+        subscribersLost: 0,
+        period: 'last_90_days',
+      }
+    } catch (err) {
+      console.warn('getChannelAnalytics (instagram) failed, using defaults:', err instanceof Error ? err.message : err)
+      return defaultAnalytics
     }
   }
 }

@@ -26,13 +26,31 @@ function PlatformIcon({ platform }: { platform: string }) {
 
 export default function Settings({ userId }: Props) {
   const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [disconnecting, setDisconnecting] = useState<string | null>(null)
 
-  useEffect(() => {
+  function loadProfile() {
     fetch(`/users/${userId}/profile`)
       .then((r) => r.json())
       .then((data) => setProfile(data as UserProfile))
       .catch(() => {})
+  }
+
+  useEffect(() => {
+    loadProfile()
   }, [userId])
+
+  async function disconnect(platform: string) {
+    setDisconnecting(platform)
+    try {
+      const res = await fetch(`/auth/${platform}/${userId}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error('Failed to disconnect')
+      loadProfile()
+    } catch (err) {
+      console.error('Disconnect error:', err)
+    } finally {
+      setDisconnecting(null)
+    }
+  }
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10 flex flex-col gap-8">
@@ -91,22 +109,22 @@ export default function Settings({ userId }: Props) {
                   <p className="text-sm text-violet-300/60 truncate">{p.channelName}</p>
                 </div>
                 <button
-                  disabled
-                  title="Disconnect coming soon"
-                  className="flex items-center gap-1.5 text-xs text-violet-400/50 border border-violet-800/40 px-3 py-1.5 rounded-lg cursor-not-allowed"
+                  onClick={() => disconnect(p.platform)}
+                  disabled={disconnecting === p.platform}
+                  className="flex items-center gap-1.5 text-xs text-red-400/70 hover:text-red-300 border border-red-900/40 hover:border-red-700/60 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <X size={13} />
-                  Disconnect
+                  {disconnecting === p.platform ? 'Disconnecting…' : 'Disconnect'}
                 </button>
               </div>
             ))}
           </div>
         )}
 
-        {/* Add platform */}
+        {/* Add Instagram if not connected */}
         {profile && !profile.connectedPlatforms.find((p) => p.platform === 'instagram') && (
           <a
-            href="/auth/instagram/login"
+            href={`/auth/instagram/login?userId=${userId}`}
             className="bg-[#1a1625]/60 border border-dashed border-violet-700/40 hover:border-violet-500/60 rounded-2xl px-5 py-4 flex items-center gap-4 transition-colors group"
           >
             <div className="w-9 h-9 rounded-lg bg-violet-900/30 border border-violet-700/30 flex items-center justify-center">

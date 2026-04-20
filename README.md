@@ -81,7 +81,7 @@ If the Python processor is not running, the API falls back gracefully and Claude
 4. Click **Run Analysis** to generate AI recommendations
 5. View detailed recommendations on the Recommendations page
 
-## Adding Instagram
+## Instagram Setup
 
 Instagram uses the Meta Graph API with a long-lived token (60-day expiry, auto-refreshable).
 
@@ -91,17 +91,29 @@ Instagram uses the Meta Graph API with a long-lived token (60-day expiry, auto-r
 2. Choose **Consumer** app type
 3. Add product: **Instagram Graph API**
 4. Under **Instagram → Basic Display**:
-   - Add OAuth Redirect URI: `http://localhost:8000/auth/instagram/callback`
-   - Add Deauthorize URL and Data Deletion URL (use `http://localhost:8000/webhooks` for local dev)
+   - Valid OAuth Redirect URI: `http://localhost:8000/auth/instagram/callback`
+   - Deauthorize Callback URL: `http://localhost:8000/webhooks`
+   - Data Deletion Request URL: `http://localhost:8000/webhooks`
 5. Add yourself as a test user:
-   **Roles → Test Users → Add**
-6. Connect your Instagram Professional account to the test user
-7. Copy **App ID** and **App Secret** to `.env` as `META_APP_ID` and `META_APP_SECRET`
+   **Roles → Test Users → Add** → connect your Instagram account
+6. Your Instagram account must be a **Professional account** (Creator or Business)
+   — switch for free in Instagram → **Settings → Account → Switch to Professional Account**
+7. Copy **App ID** and **App Secret** to your `.env` as `META_APP_ID` and `META_APP_SECRET`
 
-> **Note:** Instagram Basic Display API requires a **Professional account** (Creator or Business).
-> Switch for free in Instagram → Settings → Account → Switch to Professional Account.
+Once set up, sign into the app with Google first, then click **+ Connect Instagram** on the Dashboard or Settings page. The OAuth flow will link your Instagram account to your existing session. After connecting:
 
-Once set up, click **+ Connect Instagram** on the dashboard. After authorizing, your Instagram posts will appear in the combined feed and the next analysis will include cross-platform insights.
+- Your Instagram posts appear in the analysis alongside YouTube
+- Per-platform analysis available from each platform card
+- **Holistic Analysis** (shown when both platforms connected) generates cross-platform recommendations
+- Tokens automatically refresh before expiry; manual disconnect available in Settings
+
+### Token lifecycle
+
+| | YouTube | Instagram |
+|---|---|---|
+| Token type | OAuth 2.0 (short-lived + refresh) | Long-lived (60-day, no refresh token) |
+| Refresh | Automatic via googleapis client | Refreshed if within 7 days of expiry |
+| Disconnect | Settings → Disconnect | Settings → Disconnect |
 
 ## Stack
 

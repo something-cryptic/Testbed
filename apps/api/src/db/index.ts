@@ -231,6 +231,10 @@ export function clearPlatformTokens(userId: string): void {
   db.prepare('DELETE FROM connected_platforms WHERE user_id = ?').run(userId)
 }
 
+export function deletePlatformTokens(userId: string, platform: string): void {
+  db.prepare('DELETE FROM connected_platforms WHERE user_id = ? AND platform = ?').run(userId, platform)
+}
+
 export function updatePlatformTokens(
   userId: string,
   platform: string,

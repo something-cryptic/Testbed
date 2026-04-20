@@ -101,7 +101,7 @@ export default function Dashboard({ userId }: Props) {
         {/* Connect Instagram prompt */}
         {profile && !profile.connectedPlatforms.find((p) => p.platform === 'instagram') && (
           <a
-            href="/auth/instagram/login"
+            href={`/auth/instagram/login?userId=${userId}`}
             className="bg-[#1a1625]/60 border border-dashed border-violet-700/40 hover:border-violet-500/60 rounded-2xl p-6 flex items-center gap-4 transition-colors group"
           >
             <div className="w-14 h-14 rounded-full bg-violet-900/30 border border-violet-700/30 flex items-center justify-center">

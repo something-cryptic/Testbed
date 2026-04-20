@@ -2,7 +2,7 @@ import { Router } from 'express'
 import type { Request, Response } from 'express'
 import { generateAuthUrl, exchangeCode } from '../auth/google.js'
 import { generateAuthUrl as generateInstagramAuthUrl, exchangeCode as exchangeInstagramCode } from '../auth/meta.js'
-import { getConnectedPlatforms, clearPlatformTokens } from '../db/index.js'
+import { getConnectedPlatforms, clearPlatformTokens, deletePlatformTokens } from '../db/index.js'
 
 const router = Router()
 
@@ -40,24 +40,28 @@ router.get('/callback', async (req: Request, res: Response) => {
 // ── Instagram / Meta ──────────────────────────────────────────────────────────
 
 router.get('/instagram/login', (req: Request, res: Response) => {
-  // If a userId cookie exists, pass it as state so we can link the
-  // Instagram account to the existing user after the callback
-  const existingUserId = (req.cookies as Record<string, string | undefined>)['userId']
-  const url = generateInstagramAuthUrl()
-  // Append state param with existing userId for account linking
-  const separator = url.includes('?') ? '&' : '?'
-  res.redirect(existingUserId ? `${url}${separator}state=${existingUserId}` : url)
+  // Prefer userId from query param (passed by the frontend connect button),
+  // fall back to cookie for standalone Instagram sign-in.
+  const queryUserId = req.query['userId'] as string | undefined
+  const cookieUserId = (req.cookies as Record<string, string | undefined>)['userId']
+  const state = queryUserId ?? cookieUserId ?? undefined
+
+  const url = generateInstagramAuthUrl(state)
+  res.redirect(url)
 })
 
 router.get('/instagram/callback', async (req: Request, res: Response) => {
   const code = req.query['code'] as string | undefined
+  const state = req.query['state'] as string | undefined
+
   if (!code) {
     res.status(400).json({ error: 'Missing authorization code' })
     return
   }
 
   try {
-    const { userId } = await exchangeInstagramCode(code)
+    // Pass the state (existingUserId) so exchangeCode can link to the right user
+    const { userId } = await exchangeInstagramCode(code, state)
     const frontendUrl = process.env['FRONTEND_URL'] ?? 'http://localhost:5173'
 
     res.cookie('userId', userId, {
@@ -73,7 +77,20 @@ router.get('/instagram/callback', async (req: Request, res: Response) => {
   }
 })
 
-// ── Logout ────────────────────────────────────────────────────────────────────
+// ── Disconnect a single platform ──────────────────────────────────────────────
+
+router.delete('/:platform/:userId', (req: Request, res: Response) => {
+  const { platform, userId } = req.params as { platform: string; userId: string }
+  try {
+    deletePlatformTokens(userId, platform)
+    res.status(200).json({ ok: true })
+  } catch (err) {
+    console.error(`Disconnect ${platform} error:`, err)
+    res.status(500).json({ error: 'Failed to disconnect platform' })
+  }
+})
+
+// ── Logout (all platforms) ────────────────────────────────────────────────────
 
 router.post('/logout/:userId', (req: Request, res: Response) => {
   const { userId } = req.params as { userId: string }
