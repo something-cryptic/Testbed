@@ -74,8 +74,6 @@ export default function Dashboard({ userId }: Props) {
 
       {/* Connected platform cards */}
       <section className="flex flex-col gap-4">
-        <h2 className="text-xs font-semibold text-violet-300/80 uppercase tracking-widest">Connected Platforms</h2>
-
         {!profile && (
           <div className="flex flex-col gap-4">
             {[1, 2].map((i) => (

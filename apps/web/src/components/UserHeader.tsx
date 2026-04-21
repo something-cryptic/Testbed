@@ -1,3 +1,12 @@
+import { useLocation } from 'react-router-dom'
+
+const PAGE_TITLES: Record<string, string> = {
+  '/dashboard': 'Dashboard',
+  '/analytics': 'Analytics',
+  '/recommendations': 'Recommendations',
+  '/settings': 'Settings',
+}
+
 interface Props {
   name: string | null
   email: string | null
@@ -6,16 +15,16 @@ interface Props {
 }
 
 export default function UserHeader({ name, email, avatarUrl, onLogout }: Props) {
+  const location = useLocation()
+  const pageTitle = PAGE_TITLES[location.pathname] ?? 'Dashboard'
   const displayName = name ?? email ?? 'Account'
   const initial = displayName.charAt(0).toUpperCase()
 
   return (
     <header className="border-b border-violet-900/40 bg-[#0f0d1a]/80 sticky top-0 z-10 backdrop-blur">
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-        {/* App name */}
-        <span className="font-semibold bg-gradient-to-r from-violet-300 to-fuchsia-300 bg-clip-text text-transparent">
-          Content Analyzer
-        </span>
+        {/* Dynamic page title */}
+        <span className="font-bold text-violet-100">{pageTitle}</span>
 
         {/* User info + logout */}
         <div className="flex items-center gap-3">
