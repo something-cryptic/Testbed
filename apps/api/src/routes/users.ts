@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import type { Request, Response } from 'express'
 import { google } from 'googleapis'
-import { getUser, getPlatformTokens, getLastAnalyzedByPlatform } from '../db/index.js'
+import { getUser, getPlatformTokens, getLastAnalyzedByPlatform, updatePlatformTokens } from '../db/index.js'
 import Database from 'better-sqlite3'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
@@ -21,6 +21,38 @@ interface PlatformProfile {
   lastAnalyzed: string | null
 }
 
+// Matches the getAuthClient pattern in platforms/youtube.ts exactly:
+// initializes OAuth2, sets stored credentials, and wires the tokens
+// event so any refreshed access token is persisted back to the DB.
+function makeYouTubeAuthClient(userId: string) {
+  const tokens = getPlatformTokens(userId, 'youtube')
+  if (!tokens) throw new Error(`No YouTube tokens for user ${userId}`)
+
+  const auth = new google.auth.OAuth2(
+    process.env['GOOGLE_CLIENT_ID'],
+    process.env['GOOGLE_CLIENT_SECRET'],
+    process.env['REDIRECT_URI'],
+  )
+  auth.setCredentials({
+    access_token: tokens.accessToken,
+    refresh_token: tokens.refreshToken,
+    expiry_date: new Date(tokens.expiresAt).getTime(),
+  })
+
+  // Persist any auto-refreshed token back to DB so it's not lost
+  auth.on('tokens', (newTokens) => {
+    if (newTokens.access_token) {
+      const expiresAt = newTokens.expiry_date
+        ? new Date(newTokens.expiry_date).toISOString()
+        : new Date(Date.now() + 3600_000).toISOString()
+      updatePlatformTokens(userId, 'youtube', newTokens.access_token, expiresAt)
+      console.log('YouTube token auto-refreshed and saved for userId:', userId)
+    }
+  })
+
+  return auth
+}
+
 async function getYouTubeProfile(userId: string): Promise<PlatformProfile> {
   const fallback: PlatformProfile = {
     platform: 'youtube',
@@ -32,38 +64,15 @@ async function getYouTubeProfile(userId: string): Promise<PlatformProfile> {
   }
 
   try {
-    const tokens = getPlatformTokens(userId, 'youtube')
-    if (!tokens) {
-      console.log('getYouTubeProfile: no tokens found for userId:', userId)
-      return fallback
-    }
-
-    const auth = new google.auth.OAuth2(
-      process.env['GOOGLE_CLIENT_ID'],
-      process.env['GOOGLE_CLIENT_SECRET'],
-      process.env['REDIRECT_URI'],
-    )
-    auth.setCredentials({
-      access_token: tokens.accessToken,
-      refresh_token: tokens.refreshToken,
-      expiry_date: new Date(tokens.expiresAt).getTime(),
-    })
-
+    const auth = makeYouTubeAuthClient(userId)
     const youtube = google.youtube({ version: 'v3', auth })
 
     console.log('Fetching YouTube channel details...')
-    let res
-    try {
-      res = await youtube.channels.list({
-        part: ['snippet', 'statistics'],
-        mine: true,
-      })
-      const snippet = res.data.items?.[0]?.snippet
-      console.log('YouTube channel snippet:', JSON.stringify(snippet))
-    } catch (apiErr) {
-      console.error('YouTube channels.list failed:', apiErr instanceof Error ? apiErr.message : String(apiErr))
-      return fallback
-    }
+    const res = await youtube.channels.list({
+      part: ['snippet', 'statistics'],
+      mine: true,
+    })
+    console.log('YouTube channel snippet:', JSON.stringify(res.data.items?.[0]?.snippet))
 
     const channel = res.data.items?.[0]
     if (!channel) {
@@ -88,7 +97,7 @@ async function getYouTubeProfile(userId: string): Promise<PlatformProfile> {
       lastAnalyzed: null,
     }
   } catch (err) {
-    console.error('getYouTubeProfile unexpected error:', err instanceof Error ? err.message : String(err))
+    console.error('getYouTubeProfile error:', err instanceof Error ? err.message : String(err))
     return fallback
   }
 }
@@ -165,12 +174,9 @@ router.get('/:userId/profile', async (req: Request, res: Response) => {
 
     const lastAnalyzed = getLastAnalyzedByPlatform(userId)
 
-    // Fetch profile details for every connected platform row.
-    // Failures return fallback values — the platform is never dropped.
     const profilePromises = platforms.map((cp) => {
       if (cp.platform === 'youtube') return getYouTubeProfile(userId)
       if (cp.platform === 'instagram') return getInstagramProfile(userId)
-      // Unknown platform — return a minimal fallback so it still appears
       return Promise.resolve<PlatformProfile>({
         platform: cp.platform,
         channelName: cp.platform,
