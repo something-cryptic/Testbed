@@ -58,7 +58,8 @@ async function getYouTubeProfile(userId: string): Promise<PlatformProfile> {
         part: ['snippet', 'statistics'],
         mine: true,
       })
-      console.log('YouTube channel response:', JSON.stringify(res.data))
+      const snippet = res.data.items?.[0]?.snippet
+      console.log('YouTube channel snippet:', JSON.stringify(snippet))
     } catch (apiErr) {
       console.error('YouTube channels.list failed:', apiErr instanceof Error ? apiErr.message : String(apiErr))
       return fallback
@@ -70,10 +71,18 @@ async function getYouTubeProfile(userId: string): Promise<PlatformProfile> {
       return fallback
     }
 
+    const thumbnails = channel.snippet?.thumbnails
+    const avatarUrl =
+      thumbnails?.high?.url ??
+      thumbnails?.medium?.url ??
+      thumbnails?.default?.url ??
+      ''
+    console.log('YouTube avatar URL resolved:', avatarUrl)
+
     return {
       platform: 'youtube',
       channelName: channel.snippet?.title ?? 'YouTube Channel',
-      avatarUrl: channel.snippet?.thumbnails?.default?.url ?? '',
+      avatarUrl,
       subscriberCount: parseInt(channel.statistics?.subscriberCount ?? '0'),
       videoCount: parseInt(channel.statistics?.videoCount ?? '0'),
       lastAnalyzed: null,

@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 interface Props {
   platform: 'youtube' | 'instagram'
   channelName: string
@@ -71,6 +73,8 @@ export default function PlatformCard({
 }: Props) {
   const config = platformConfig[platform]
   const { Icon } = config
+  const [imgFailed, setImgFailed] = useState(false)
+  const showImage = avatarUrl && !imgFailed
 
   const lastAnalyzedStr = lastAnalyzed
     ? new Date(lastAnalyzed).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -80,10 +84,20 @@ export default function PlatformCard({
     <div className="bg-[#1a1625]/80 border border-violet-800/30 rounded-2xl p-6 flex items-center gap-5 hover:border-violet-700/50 transition-all">
       {/* Avatar + platform badge */}
       <div className="relative shrink-0">
-        {avatarUrl ? (
-          <img src={avatarUrl} alt={channelName} className="w-14 h-14 rounded-full object-cover ring-2 ring-violet-700/30" />
+        {showImage ? (
+          <img
+            src={avatarUrl}
+            alt={channelName}
+            crossOrigin="anonymous"
+            className="w-14 h-14 rounded-full object-cover ring-2 ring-violet-700/30"
+            onError={() => setImgFailed(true)}
+          />
         ) : (
-          <div className="w-14 h-14 rounded-full bg-violet-900/40 border border-violet-700/30 flex items-center justify-center text-violet-300 text-xl font-bold">
+          <div className={`w-14 h-14 rounded-full flex items-center justify-center text-white text-xl font-bold ${
+            platform === 'youtube'
+              ? 'bg-red-600'
+              : 'bg-gradient-to-br from-purple-500 to-pink-500'
+          }`}>
             {channelName.charAt(0).toUpperCase()}
           </div>
         )}

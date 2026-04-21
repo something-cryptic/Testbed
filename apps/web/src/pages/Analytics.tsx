@@ -26,12 +26,6 @@ export default function Analytics({ userId }: Props) {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10 flex flex-col gap-8">
-      {/* Page header */}
-      <div>
-        <h1 className="text-2xl font-bold text-violet-100">Analytics</h1>
-        <p className="text-sm text-violet-300/70 mt-1">Detailed analytics and graphs coming soon</p>
-      </div>
-
       {/* Empty state or per-platform cards */}
       {platforms.length === 0 ? (
         <div className="flex flex-col items-center gap-4 py-20 text-center">
