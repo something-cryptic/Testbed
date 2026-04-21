@@ -74,7 +74,10 @@ export default function PlatformCard({
   const config = platformConfig[platform]
   const { Icon } = config
   const [imgFailed, setImgFailed] = useState(false)
-  const showImage = avatarUrl && !imgFailed
+  const proxyUrl = avatarUrl
+    ? `/proxy/image?url=${encodeURIComponent(avatarUrl)}`
+    : ''
+  const showImage = proxyUrl && !imgFailed
 
   const lastAnalyzedStr = lastAnalyzed
     ? new Date(lastAnalyzed).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -86,7 +89,7 @@ export default function PlatformCard({
       <div className="relative shrink-0">
         {showImage ? (
           <img
-            src={avatarUrl}
+            src={proxyUrl}
             alt={channelName}
             crossOrigin="anonymous"
             className="w-14 h-14 rounded-full object-cover ring-2 ring-violet-700/30"

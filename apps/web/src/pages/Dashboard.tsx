@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import PlatformCard from '../components/PlatformCard.tsx'
@@ -29,10 +29,13 @@ export default function Dashboard({ userId }: Props) {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [analyzingPlatform, setAnalyzingPlatform] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const hasFetched = useRef(false)
 
   useEffect(() => {
+    if (hasFetched.current) return
+    hasFetched.current = true
     fetchProfile()
-  }, [userId])
+  }, [])
 
   async function fetchProfile() {
     try {

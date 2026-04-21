@@ -7,6 +7,7 @@ import authRouter from './routes/auth.js'
 import videosRouter from './routes/videos.js'
 import analyzeRouter from './routes/analyze.js'
 import usersRouter from './routes/users.js'
+import proxyRouter from './routes/proxy.js'
 import debugRouter from './routes/debug.js' // TODO: remove before launch
 
 const app = express()
@@ -22,6 +23,7 @@ app.use('/auth', authRouter)
 app.use('/videos', videosRouter)
 app.use('/analyze', analyzeRouter)
 app.use('/users', usersRouter)
+app.use('/proxy', proxyRouter)
 app.use('/debug', debugRouter) // TODO: remove before launch
 
 app.listen(PORT, () => {

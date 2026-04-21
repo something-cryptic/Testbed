@@ -18,6 +18,7 @@ export default defineConfig({
       '/users': 'http://localhost:8000',
       '/debug': 'http://localhost:8000',
       '/health': 'http://localhost:8000',
+      '/proxy': 'http://localhost:8000',
     },
   },
 })
