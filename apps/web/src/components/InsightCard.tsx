@@ -1,27 +1,43 @@
+import { memo } from 'react'
+import type { CSSProperties } from 'react'
 import type { Recommendation } from '@analyzer/types'
+import { glassCardLight } from '../styles/glass.ts'
 
 const impactColors = {
-  high: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+  high:   'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
   medium: 'bg-amber-500/10 text-amber-300 border-amber-500/20',
-  low: 'bg-violet-500/10 text-violet-300 border-violet-500/20',
+  low:    'bg-purple-500/10 text-purple-300 border-purple-500/20',
 }
 
 const categoryIcons: Record<string, string> = {
-  titles: '✏️',
-  length: '⏱️',
-  timing: '📅',
-  tags: '🏷️',
+  titles:     '✏️',
+  length:     '⏱️',
+  timing:     '📅',
+  tags:       '🏷️',
   thumbnails: '🖼️',
-  content: '🎬',
+  content:    '🎬',
+}
+
+const categoryTint: Record<string, CSSProperties> = {
+  titles:     { background: 'rgba(59, 130, 246, 0.06)'  },
+  thumbnails: { background: 'rgba(59, 130, 246, 0.06)'  },
+  timing:     { background: 'rgba(34, 197, 94, 0.06)'   },
+  tags:       { background: 'rgba(34, 197, 94, 0.06)'   },
+  length:     { background: 'rgba(251, 146, 60, 0.06)'  },
+  content:    { background: 'rgba(168, 85, 247, 0.06)'  },
 }
 
 interface Props {
   rec: Recommendation
 }
 
-export default function InsightCard({ rec }: Props) {
+function InsightCard({ rec }: Props) {
+  const tint = categoryTint[rec.category] ?? {}
   return (
-    <div className="bg-[#1a1625]/80 border border-violet-800/30 rounded-xl p-5 flex flex-col gap-3 hover:border-violet-600/50 hover:bg-[#1e1a2e]/80 transition-all">
+    <div
+      className="p-5 flex flex-col gap-3 transition-all hover:-translate-y-0.5"
+      style={{ ...glassCardLight, ...tint, contentVisibility: 'auto', containIntrinsicSize: '0 160px' } as CSSProperties}
+    >
       <div className="flex items-center justify-between gap-3">
         <span className="text-lg">{categoryIcons[rec.category] ?? '💡'}</span>
         <span
@@ -30,11 +46,13 @@ export default function InsightCard({ rec }: Props) {
           {rec.expectedImpact} impact
         </span>
       </div>
-      <p className="font-semibold text-sm leading-snug text-violet-100">{rec.finding}</p>
-      <p className="text-sm text-violet-200 leading-relaxed">{rec.action}</p>
+      <p className="font-semibold text-sm leading-snug text-purple-50">{rec.finding}</p>
+      <p className="text-sm text-purple-200 leading-relaxed">{rec.action}</p>
       {rec.supportingData && (
-        <p className="text-xs text-violet-300/80 italic">{rec.supportingData}</p>
+        <p className="text-xs text-purple-300/80 italic">{rec.supportingData}</p>
       )}
     </div>
   )
 }
+
+export default memo(InsightCard)

@@ -53,6 +53,10 @@ db.exec(`
 try { db.exec(`ALTER TABLE users ADD COLUMN google_id TEXT`) } catch { /* already exists */ }
 try { db.exec(`ALTER TABLE users ADD COLUMN name TEXT`) } catch { /* already exists */ }
 try { db.exec(`ALTER TABLE users ADD COLUMN avatar_url TEXT`) } catch { /* already exists */ }
+try { db.exec(`ALTER TABLE users ADD COLUMN username TEXT`) } catch { /* already exists */ }
+try { db.exec(`ALTER TABLE users ADD COLUMN custom_avatar_url TEXT`) } catch { /* already exists */ }
+try { db.exec(`ALTER TABLE users ADD COLUMN preferences TEXT`) } catch { /* already exists */ }
+try { db.exec(`ALTER TABLE analyses ADD COLUMN platform TEXT NOT NULL DEFAULT 'all'`) } catch { /* already exists */ }
 
 // Add unique index on connected_platforms(user_id, platform) if the table was
 // created before this constraint existed. The ON CONFLICT upsert requires it.
@@ -68,10 +72,85 @@ try {
 
 // ── Users ────────────────────────────────────────────────────────────────────
 
-type UserRow = { id: string; google_id: string | null; email: string; name: string | null; avatar_url: string | null; created_at: string }
+export interface Preferences {
+  theme: string
+  sidebarCollapsed: boolean
+  defaultPlatform: 'youtube' | 'instagram' | 'all'
+  emailNotifications: boolean
+  showSubscriberCount: boolean
+}
+
+export const DEFAULT_PREFERENCES: Preferences = {
+  theme: 'lavender',
+  sidebarCollapsed: false,
+  defaultPlatform: 'all',
+  emailNotifications: false,
+  showSubscriberCount: true,
+}
+
+export interface UserProfile {
+  id: string
+  email: string
+  name: string | null
+  avatarUrl: string | null
+  username: string | null
+  customAvatarUrl: string | null
+  preferences: Preferences
+  createdAt: string
+}
+
+type UserRow = {
+  id: string
+  google_id: string | null
+  email: string
+  name: string | null
+  avatar_url: string | null
+  username: string | null
+  custom_avatar_url: string | null
+  preferences: string | null
+  created_at: string
+}
 
 function rowToUser(row: UserRow): User {
   return { id: row.id, email: row.email, name: row.name ?? null, avatarUrl: row.avatar_url ?? null, createdAt: row.created_at }
+}
+
+function rowToUserProfile(row: UserRow): UserProfile {
+  let prefs: Preferences = DEFAULT_PREFERENCES
+  if (row.preferences) {
+    try { prefs = { ...DEFAULT_PREFERENCES, ...(JSON.parse(row.preferences) as Partial<Preferences>) } } catch { /* keep defaults */ }
+  }
+  return {
+    id: row.id,
+    email: row.email,
+    name: row.name ?? null,
+    avatarUrl: row.avatar_url ?? null,
+    username: row.username ?? null,
+    customAvatarUrl: row.custom_avatar_url ?? null,
+    preferences: prefs,
+    createdAt: row.created_at,
+  }
+}
+
+export function getUserProfile(userId: string): UserProfile | undefined {
+  const row = db.prepare('SELECT * FROM users WHERE id = ?').get(userId) as UserRow | undefined
+  if (!row) return undefined
+  return rowToUserProfile(row)
+}
+
+export function updateUserProfile(
+  userId: string,
+  updates: { username?: string; customAvatarUrl?: string | null; preferences?: string },
+): UserProfile | undefined {
+  const fields: string[] = []
+  const values: unknown[] = []
+  if ('username' in updates) { fields.push('username = ?'); values.push(updates.username ?? null) }
+  if ('customAvatarUrl' in updates) { fields.push('custom_avatar_url = ?'); values.push(updates.customAvatarUrl ?? null) }
+  if ('preferences' in updates) { fields.push('preferences = ?'); values.push(updates.preferences) }
+  if (fields.length === 0) return getUserProfile(userId)
+  values.push(userId)
+  db.prepare(`UPDATE users SET ${fields.join(', ')} WHERE id = ?`).run(...values)
+  return getUserProfile(userId)
 }
 
 export function getUser(id: string): User | undefined {
@@ -172,7 +251,6 @@ export function savePlatformTokens(
         END,
         expires_at = excluded.expires_at
     `).run(id, userId, platform, accessToken, refreshToken, expiresAt)
-    console.log(`savePlatformTokens: ${info.changes} row(s) affected for userId=${userId} platform=${platform}`)
   } catch (e) {
     console.error(`savePlatformTokens FAILED for userId=${userId} platform=${platform}:`, e instanceof Error ? e.message : e)
     throw e
@@ -280,83 +358,35 @@ export function saveAnalysis(
   platforms: string[],
   result: unknown,
 ): void {
+  // `platform` column stores the canonical key used for retrieval:
+  // single-platform runs store that platform name; multi-platform runs store 'all'
+  const platform = platforms.length === 1 ? platforms[0]! : 'all'
   db.prepare(`
-    INSERT INTO analyses (id, user_id, platforms, result, created_at)
-    VALUES (?, ?, ?, ?, ?)
-  `).run(id, userId, platforms.join(','), JSON.stringify(result), new Date().toISOString())
+    INSERT INTO analyses (id, user_id, platforms, platform, result, created_at)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `).run(id, userId, platforms.join(','), platform, JSON.stringify(result), new Date().toISOString())
 }
 
 export function getLatestAnalysis(userId: string, platform?: string): unknown | null {
-  if (!platform || platform === 'all') {
-    const row = db
-      .prepare('SELECT result FROM analyses WHERE user_id = ? ORDER BY created_at DESC LIMIT 1')
-      .get(userId) as { result: string } | undefined
-    if (!row) return null
-    return JSON.parse(row.result)
-  }
-
-  // Find most recent analysis that includes this platform
-  const rows = db
-    .prepare('SELECT result, platforms FROM analyses WHERE user_id = ? ORDER BY created_at DESC')
-    .all(userId) as { result: string; platforms: string }[]
-
-  for (const row of rows) {
-    if (row.platforms.split(',').includes(platform)) {
-      return JSON.parse(row.result)
-    }
-  }
-  return null
+  const key = platform && platform !== 'all' ? platform : 'all'
+  const row = db
+    .prepare('SELECT result FROM analyses WHERE user_id = ? AND platform = ? ORDER BY created_at DESC LIMIT 1')
+    .get(userId, key) as { result: string } | undefined
+  if (!row) return null
+  return JSON.parse(row.result)
 }
 
-export function getLatestAnalysisForPlatform(userId: string, platforms: string[]): { result: unknown; createdAt: string } | null {
-  // Match rows where the platforms column equals the sorted join of the requested platforms
-  const key = [...platforms].sort().join(',')
-  const rows = db
-    .prepare(
-      'SELECT result, created_at FROM analyses WHERE user_id = ? ORDER BY created_at DESC',
-    )
-    .all(userId) as { result: string; created_at: string }[]
-
-  for (const row of rows) {
-    // Parse stored platforms and compare as sorted sets
-    const stored = row.created_at // just need to find any match; check result below
-    void stored
-    const analysisResult = JSON.parse(row.result) as Record<string, unknown>
-    // The platforms are stored in the platforms column — re-query with it
-    const matchRow = db
-      .prepare(
-        'SELECT result, created_at FROM analyses WHERE user_id = ? AND platforms = ? ORDER BY created_at DESC LIMIT 1',
-      )
-      .get(userId, key) as { result: string; created_at: string } | undefined
-    if (matchRow) {
-      return { result: JSON.parse(matchRow.result), createdAt: matchRow.created_at }
-    }
-    void analysisResult
-    break
-  }
-  return null
-}
 
 export function getLastAnalyzedByPlatform(userId: string): Record<string, string> {
   const rows = db
     .prepare(
-      'SELECT platforms, MAX(created_at) as last_run FROM analyses WHERE user_id = ? GROUP BY platforms',
+      'SELECT platform, MAX(created_at) as last_run FROM analyses WHERE user_id = ? GROUP BY platform',
     )
-    .all(userId) as { platforms: string; last_run: string }[]
+    .all(userId) as { platform: string; last_run: string }[]
 
   const result: Record<string, string> = {}
   for (const row of rows) {
-    for (const platform of row.platforms.split(',')) {
-      if (!result[platform] || row.last_run > result[platform]!) {
-        result[platform] = row.last_run
-      }
-    }
-    // Also store 'all' key for multi-platform runs
-    if (row.platforms.includes(',')) {
-      if (!result['all'] || row.last_run > result['all']!) {
-        result['all'] = row.last_run
-      }
-    }
+    result[row.platform] = row.last_run
   }
   return result
 }

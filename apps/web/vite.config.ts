@@ -12,13 +12,14 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/auth': 'http://localhost:8000',
-      '/videos': 'http://localhost:8000',
-      '/analyze': 'http://localhost:8000',
-      '/users': 'http://localhost:8000',
-      '/debug': 'http://localhost:8000',
-      '/health': 'http://localhost:8000',
-      '/proxy': 'http://localhost:8000',
+      '/auth': 'http://127.0.0.1:8000',
+      '/videos': 'http://127.0.0.1:8000',
+      '/analyze': 'http://127.0.0.1:8000',
+      '/users': 'http://127.0.0.1:8000',
+      '/health': 'http://127.0.0.1:8000',
+      '/proxy': 'http://127.0.0.1:8000',
+      '/upload': 'http://127.0.0.1:8000',
+      '/uploads': 'http://127.0.0.1:8000',
     },
   },
 })

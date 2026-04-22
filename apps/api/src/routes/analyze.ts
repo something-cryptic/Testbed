@@ -3,6 +3,7 @@ import type { Request, Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
 import { YouTubePlatform } from '../platforms/youtube.js'
 import { InstagramPlatform } from '../platforms/instagram.js'
+import { TwitchPlatform } from '../platforms/twitch.js'
 import {
   getCachedPosts,
   savePosts,
@@ -75,6 +76,26 @@ router.post('/:userId', async (req: Request, res: Response) => {
       )
       analyticsMap['instagram'] = ig.getChannelAnalytics(userId).catch((err) => {
         console.warn('Instagram getChannelAnalytics error:', err instanceof Error ? err.message : err)
+        return DEFAULT_ANALYTICS
+      })
+    }
+
+    if (targetPlatforms.includes('twitch')) {
+      const tw = new TwitchPlatform()
+      const cached = getCachedPosts(userId, 'twitch') as NormalizedPost[] | null
+      fetchers.push(
+        cached
+          ? Promise.resolve(cached)
+          : tw.getRecentPosts(userId).then((posts) => {
+              console.log('Fetching posts for platform: twitch')
+              console.log('Posts fetched:', posts.length)
+              console.log('First post sample:', JSON.stringify(posts[0] ?? 'none'))
+              savePosts(uuidv4(), userId, 'twitch', posts)
+              return posts
+            }),
+      )
+      analyticsMap['twitch'] = tw.getChannelAnalytics(userId).catch((err) => {
+        console.warn('Twitch getChannelAnalytics error:', err instanceof Error ? err.message : err)
         return DEFAULT_ANALYTICS
       })
     }

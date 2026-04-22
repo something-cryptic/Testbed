@@ -77,8 +77,9 @@ export interface User {
 export interface ConnectedPlatform {
   id: string
   userId: string
-  platform: 'youtube' | 'instagram' | 'tiktok'
+  platform: 'youtube' | 'instagram' | 'tiktok' | 'twitch'
   accessToken: string
   refreshToken: string
   expiresAt: string
+  customUrl: string | null
 }

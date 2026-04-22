@@ -2,8 +2,157 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  body {
-    @apply bg-[#0f0d1a] text-gray-100 antialiased;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body, #root {
+  min-height: 100vh;
+  width: 100%;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Default CSS variable values (lavender theme) — overridden at runtime by ThemeContext */
+:root {
+  --background: linear-gradient(135deg, #0e0e1a 0%, #13112b 40%, #110f24 100%);
+  --background-gradient: radial-gradient(ellipse 80% 80% at 100% 100%, rgba(180,160,255,0.25) 0%, rgba(140,120,220,0.1) 40%, transparent 70%);
+  --glow-color: rgba(190, 168, 255, 0.18);
+  --glow-color-strong: rgba(200, 180, 255, 0.3);
+  --border-accent: rgba(210, 190, 255, 0.35);
+  --border-accent-strong: rgba(210, 190, 255, 0.5);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --glass-base: rgba(235, 228, 255, 0.07);
+  --glass-medium: rgba(225, 215, 255, 0.05);
+  --glass-strong: rgba(28, 22, 50, 0.92);
+  --button-base: rgba(200, 180, 255, 0.18);
+  --text-primary: rgba(255, 255, 255, 0.95);
+  --text-secondary: rgba(210, 200, 255, 0.75);
+  --text-muted: rgba(180, 170, 220, 0.5);
+  --accent-color: #c4b0ff;
+}
+
+body {
+  background: var(--background-gradient), var(--background);
+  background-attachment: fixed;
+  min-height: 100vh;
+  padding-top: env(safe-area-inset-top);
+}
+
+#root {
+  min-height: 100vh;
+  background: transparent;
+  position: relative;
+}
+
+#root::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: var(--glow-color);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.main-content {
+  contain: layout style;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Hide scrollbar on tab strips */
+.tab-strip {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tab-strip::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Glow hover utilities ──────────────────────────────────────────────────── */
+/*
+ * Animate only transform — never box-shadow directly, as that forces repaints.
+ * The glow itself lives on a ::after pseudo-element so only opacity transitions,
+ * which the compositor can handle without touching the main thread.
+ */
+
+.glow-hover {
+  position: relative;
+  transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.glow-hover::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  box-shadow: 0 0 16px var(--accent-color, rgba(190, 168, 255, 0.4));
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.glow-hover:hover {
+  transform: translateY(-1px);
+}
+
+.glow-hover:hover::after {
+  opacity: 1;
+}
+
+.glow-hover:active {
+  transform: translateY(0);
+}
+
+.glow-hover:active::after {
+  opacity: 0.5;
+}
+
+.glow-hover:disabled,
+.glow-hover[disabled] {
+  transform: none;
+}
+
+.glow-hover:disabled:hover,
+.glow-hover[disabled]:hover {
+  transform: none;
+}
+
+.glow-hover:disabled::after,
+.glow-hover[disabled]::after {
+  box-shadow: 0 0 8px var(--accent-color, rgba(190, 168, 255, 0.15));
+}
+
+.glow-nav:hover {
+  box-shadow:
+    0 0 10px var(--glow-color),
+    0 0 20px var(--glow-color);
+}
+
+.glow-nav:active {
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    animation: none !important;
+    transition: none !important;
   }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-enter {
+  animation: fadeIn 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }

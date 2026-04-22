@@ -7,6 +7,8 @@ const ALLOWED_HOSTS = new Set([
   'yt3.ggpht.com',
   'lh3.googleusercontent.com',
   'graph.instagram.com',
+  'static-cdn.jtvnw.net',
+  'clips-media-assets2.twitch.tv',
 ])
 
 router.get('/image', async (req: Request, res: Response) => {

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Settings as SettingsIcon, Play, Globe, X } from 'lucide-react'
+import { glassCard, glassButton, transparent } from '../styles/glass.ts'
+import { useBreakpoint } from '../hooks/useBreakpoint.ts'
 
 interface Props {
   userId: string
@@ -19,14 +21,15 @@ interface UserProfile {
 }
 
 function PlatformIcon({ platform }: { platform: string }) {
-  if (platform === 'youtube') return <Play size={18} className="text-red-400" />
-  if (platform === 'instagram') return <Globe size={18} className="text-pink-400" />
-  return <SettingsIcon size={18} className="text-gray-400" />
+  if (platform === 'youtube') return <Play size={18} color="#ef4444" />
+  if (platform === 'instagram') return <Globe size={18} color="#ec4899" />
+  return <SettingsIcon size={18} color="rgba(200, 185, 235, 0.5)" />
 }
 
 export default function Settings({ userId }: Props) {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [disconnecting, setDisconnecting] = useState<string | null>(null)
+  const { isMobile } = useBreakpoint()
 
   function loadProfile() {
     fetch(`/users/${userId}/profile`)
@@ -53,65 +56,156 @@ export default function Settings({ userId }: Props) {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10 flex flex-col gap-8">
+    <div
+      style={{
+        ...transparent,
+        maxWidth: '640px',
+        margin: '0 auto',
+        padding: isMobile ? '16px' : '40px 16px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: isMobile ? '20px' : '32px',
+      }}
+    >
       {/* Page header */}
-      <div>
-        <h1 className="text-2xl font-bold text-violet-100">Settings</h1>
-        <p className="text-sm text-violet-300/70 mt-1">Account settings and preferences</p>
+      <div style={transparent}>
+        <h1 style={{ fontSize: '22px', fontWeight: 700, color: 'rgba(240, 235, 255, 0.95)' }}>
+          Settings
+        </h1>
+        <p style={{ fontSize: '14px', color: 'rgba(200, 185, 235, 0.5)', marginTop: '4px' }}>
+          Account settings and preferences
+        </p>
       </div>
 
       {/* Account section */}
-      <section className="flex flex-col gap-3">
-        <h2 className="text-xs font-semibold text-violet-300/80 uppercase tracking-widest">Account</h2>
-        <div className="bg-[#1a1625]/80 border border-violet-800/30 rounded-2xl p-5 flex items-center gap-4">
+      <section style={{ ...transparent, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <h2 style={{ fontSize: '11px', fontWeight: 600, color: 'rgba(200, 185, 235, 0.6)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+          Account
+        </h2>
+        <div style={{ ...glassCard, padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
           {profile?.avatarUrl ? (
             <img
               src={profile.avatarUrl}
               alt={profile.name ?? ''}
-              className="w-12 h-12 rounded-full object-cover ring-2 ring-violet-700/30"
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                objectFit: 'cover',
+                boxShadow: '0 0 0 2px rgba(200, 185, 235, 0.15)',
+              }}
             />
           ) : (
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-white font-bold text-lg">
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #a78bfa, #818cf8)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontWeight: 700,
+                fontSize: '18px',
+              }}
+            >
               {(profile?.name ?? profile?.email ?? '?').charAt(0).toUpperCase()}
             </div>
           )}
           <div>
-            <p className="font-semibold text-violet-100">{profile?.name ?? '—'}</p>
+            <p style={{ fontWeight: 600, color: 'rgba(240, 235, 255, 0.95)', fontSize: '15px' }}>
+              {profile?.name ?? '—'}
+            </p>
             {profile?.email && (
-              <p className="text-sm text-violet-300/70">{profile.email}</p>
+              <p style={{ fontSize: '13px', color: 'rgba(200, 185, 235, 0.5)', marginTop: '2px' }}>
+                {profile.email}
+              </p>
             )}
           </div>
         </div>
       </section>
 
       {/* Connected platforms section */}
-      <section className="flex flex-col gap-3">
-        <h2 className="text-xs font-semibold text-violet-300/80 uppercase tracking-widest">Connected Platforms</h2>
+      <section style={{ ...transparent, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <h2 style={{ fontSize: '11px', fontWeight: 600, color: 'rgba(200, 185, 235, 0.6)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+          Connected Platforms
+        </h2>
 
         {!profile || profile.connectedPlatforms.length === 0 ? (
-          <div className="bg-[#1a1625]/80 border border-violet-800/30 rounded-2xl p-6 text-center">
-            <p className="text-sm text-violet-400/60">No platforms connected yet.</p>
+          <div style={{ ...glassCard, padding: '24px', textAlign: 'center' }}>
+            <p style={{ fontSize: '14px', color: 'rgba(180, 160, 220, 0.45)' }}>
+              No platforms connected yet.
+            </p>
           </div>
         ) : (
-          <div className="flex flex-col gap-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {profile.connectedPlatforms.map((p) => (
               <div
                 key={p.platform}
-                className="bg-[#1a1625]/80 border border-violet-800/30 rounded-2xl px-5 py-4 flex items-center gap-4"
+                style={{
+                  ...glassCard,
+                  padding: isMobile ? '14px 16px' : '16px 20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                }}
               >
-                <div className="w-9 h-9 rounded-lg bg-violet-900/40 border border-violet-700/30 flex items-center justify-center shrink-0">
+                <div
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
+                    background: 'rgba(255, 255, 255, 0.04)',
+                    borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                    borderLeft: '1px solid rgba(255, 255, 255, 0.08)',
+                    borderBottom: '1px solid rgba(200, 150, 255, 0.15)',
+                    borderRight: '1px solid rgba(200, 150, 255, 0.15)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
                   <PlatformIcon platform={p.platform} />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-violet-100 capitalize">
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontWeight: 500, color: 'rgba(240, 235, 255, 0.9)', fontSize: '14px' }}>
                     {p.platform === 'youtube' ? 'YouTube' : 'Instagram'}
                   </p>
-                  <p className="text-sm text-violet-300/60 truncate">{p.channelName}</p>
+                  <p
+                    style={{
+                      fontSize: '13px',
+                      color: 'rgba(200, 185, 235, 0.5)',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {p.channelName}
+                  </p>
                 </div>
                 <button
                   onClick={() => disconnect(p.platform)}
                   disabled={disconnecting === p.platform}
-                  className="flex items-center gap-1.5 text-xs text-red-400/70 hover:text-red-300 border border-red-900/40 hover:border-red-700/60 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontSize: '12px',
+                    color: 'rgba(248, 113, 113, 0.7)',
+                    background: 'transparent',
+                    borderTop: '1px solid transparent',
+                    borderLeft: '1px solid transparent',
+                    borderBottom: '1px solid rgba(220, 38, 38, 0.25)',
+                    borderRight: '1px solid rgba(220, 38, 38, 0.25)',
+                    borderRadius: '8px',
+                    padding: '6px 12px',
+                    cursor: disconnecting === p.platform ? 'not-allowed' : 'pointer',
+                    opacity: disconnecting === p.platform ? 0.5 : 1,
+                    transition: 'all 0.15s ease',
+                    flexShrink: 0,
+                  }}
                 >
                   <X size={13} />
                   {disconnecting === p.platform ? 'Disconnecting…' : 'Disconnect'}
@@ -119,21 +213,6 @@ export default function Settings({ userId }: Props) {
               </div>
             ))}
           </div>
-        )}
-
-        {/* Add Instagram if not connected */}
-        {profile && !profile.connectedPlatforms.find((p) => p.platform === 'instagram') && (
-          <a
-            href={`/auth/instagram/login?userId=${userId}`}
-            className="bg-[#1a1625]/60 border border-dashed border-violet-700/40 hover:border-violet-500/60 rounded-2xl px-5 py-4 flex items-center gap-4 transition-colors group"
-          >
-            <div className="w-9 h-9 rounded-lg bg-violet-900/30 border border-violet-700/30 flex items-center justify-center">
-              <Globe size={16} className="text-violet-400 group-hover:text-violet-200 transition-colors" />
-            </div>
-            <p className="text-sm font-medium text-violet-300/60 group-hover:text-violet-200 transition-colors">
-              + Connect Instagram
-            </p>
-          </a>
         )}
       </section>
     </div>

@@ -1,8 +1,11 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
+import { glassCard, glassButton } from '../styles/glass.ts'
+import { useBreakpoint } from '../hooks/useBreakpoint.ts'
 
 interface Props {
-  platform: 'youtube' | 'instagram'
+  platform: 'youtube' | 'instagram' | 'twitch'
   channelName: string
+  customUrl?: string | null
   avatarUrl: string
   subscriberCount: number
   videoCount: number
@@ -21,6 +24,14 @@ function YouTubeIcon({ size = 18 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
       <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
+    </svg>
+  )
+}
+
+function TwitchIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/>
     </svg>
   )
 }
@@ -45,25 +56,34 @@ function Spinner() {
 const platformConfig = {
   youtube: {
     label: 'YouTube',
-    badgeClass: 'bg-red-500 text-white',
-    buttonClass: 'bg-red-500/90 hover:bg-red-500 text-white shadow-sm shadow-red-900/30',
+    badgeColor: '#ef4444',
+    fallbackBg: '#dc2626',
     Icon: YouTubeIcon,
     statLabel: 'subscribers',
     postLabel: 'videos',
   },
   instagram: {
     label: 'Instagram',
-    badgeClass: 'bg-gradient-to-r from-purple-500 to-pink-500 text-white',
-    buttonClass: 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white shadow-sm shadow-purple-900/30',
+    badgeColor: '#ec4899',
+    fallbackBg: 'linear-gradient(135deg, #9333ea, #ec4899)',
     Icon: InstagramIcon,
     statLabel: 'followers',
     postLabel: 'posts',
+  },
+  twitch: {
+    label: 'Twitch',
+    badgeColor: '#9146FF',
+    fallbackBg: '#7c3aed',
+    Icon: TwitchIcon,
+    statLabel: 'followers',
+    postLabel: 'VODs',
   },
 }
 
 export default function PlatformCard({
   platform,
   channelName,
+  customUrl,
   avatarUrl,
   subscriberCount,
   videoCount,
@@ -71,12 +91,15 @@ export default function PlatformCard({
   onAnalyze,
   isAnalyzing,
 }: Props) {
+  void customUrl // available for future channel linking
   const config = platformConfig[platform]
   const { Icon } = config
   const [imgFailed, setImgFailed] = useState(false)
-  const proxyUrl = avatarUrl
-    ? `/proxy/image?url=${encodeURIComponent(avatarUrl)}`
-    : ''
+  const { isMobile } = useBreakpoint()
+  const proxyUrl = useMemo(
+    () => (avatarUrl ? `/proxy/image?url=${encodeURIComponent(avatarUrl)}` : ''),
+    [avatarUrl],
+  )
   const showImage = proxyUrl && !imgFailed
 
   const lastAnalyzedStr = lastAnalyzed
@@ -84,48 +107,110 @@ export default function PlatformCard({
     : null
 
   return (
-    <div className="bg-[#1a1625]/80 border border-violet-800/30 rounded-2xl p-6 flex items-center gap-5 hover:border-violet-700/50 transition-all">
-      {/* Avatar + platform badge */}
-      <div className="relative shrink-0">
-        {showImage ? (
-          <img
-            src={proxyUrl}
-            alt={channelName}
-            crossOrigin="anonymous"
-            className="w-14 h-14 rounded-full object-cover ring-2 ring-violet-700/30"
-            onError={() => setImgFailed(true)}
-          />
-        ) : (
-          <div className={`w-14 h-14 rounded-full flex items-center justify-center text-white text-xl font-bold ${
-            platform === 'youtube'
-              ? 'bg-red-600'
-              : 'bg-gradient-to-br from-purple-500 to-pink-500'
-          }`}>
-            {channelName.charAt(0).toUpperCase()}
-          </div>
-        )}
-        <span className={`absolute -bottom-1 -right-1 rounded-full p-1 ${config.badgeClass}`}>
-          <Icon size={12} />
-        </span>
-      </div>
-
-      {/* Info */}
-      <div className="flex-1 min-w-0">
-        <p className="font-semibold text-violet-100 truncate">{channelName}</p>
-        <div className="flex items-center gap-4 mt-1 text-sm text-violet-300">
-          <span>{fmt(subscriberCount)} {config.statLabel}</span>
-          <span>{fmt(videoCount)} {config.postLabel}</span>
+    <div
+      className="transition-all hover:-translate-y-0.5"
+      style={{
+        ...glassCard,
+        padding: isMobile ? '16px' : '20px 24px',
+        display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
+        alignItems: isMobile ? 'stretch' : 'center',
+        gap: isMobile ? '12px' : '16px',
+      }}
+    >
+      {/* Top row on mobile: avatar + info */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, minWidth: 0 }}>
+        {/* Avatar + platform badge */}
+        <div style={{ position: 'relative', flexShrink: 0 }}>
+          {showImage ? (
+            <img
+              src={proxyUrl}
+              alt={channelName}
+              crossOrigin="anonymous"
+              style={{
+                width: '52px',
+                height: '52px',
+                borderRadius: '50%',
+                objectFit: 'cover',
+                boxShadow: '0 0 0 2px rgba(200, 185, 235, 0.15)',
+              }}
+              onError={() => setImgFailed(true)}
+            />
+          ) : (
+            <div
+              style={{
+                width: '52px',
+                height: '52px',
+                borderRadius: '50%',
+                background: config.fallbackBg,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontWeight: 700,
+                fontSize: '20px',
+              }}
+            >
+              {channelName.charAt(0).toUpperCase()}
+            </div>
+          )}
+          <span
+            style={{
+              position: 'absolute',
+              bottom: '-2px',
+              right: '-2px',
+              width: '20px',
+              height: '20px',
+              borderRadius: '50%',
+              background: config.badgeColor,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 0 0 2px rgba(26, 21, 40, 0.8)',
+            }}
+          >
+            <Icon size={11} />
+          </span>
         </div>
-        {lastAnalyzedStr && (
-          <p className="text-xs text-violet-300/70 mt-1">Last analyzed {lastAnalyzedStr}</p>
-        )}
+
+        {/* Info */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p
+            style={{
+              fontWeight: 600,
+              fontSize: '15px',
+              color: 'var(--text-primary)',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {channelName}
+          </p>
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '3px' }}>
+            {fmt(subscriberCount)} {config.statLabel}
+            <span style={{ margin: '0 6px', opacity: 0.4 }}>·</span>
+            {fmt(videoCount)} {config.postLabel}
+          </p>
+          {lastAnalyzedStr && (
+            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '3px' }}>
+              Last analyzed {lastAnalyzedStr}
+            </p>
+          )}
+        </div>
       </div>
 
-      {/* Analyze button */}
+      {/* Analyze button — full width on mobile */}
       <button
         onClick={onAnalyze}
         disabled={isAnalyzing}
-        className={`shrink-0 flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg transition-all disabled:opacity-60 disabled:cursor-not-allowed ${config.buttonClass}`}
+        className="glow-hover shrink-0 flex items-center justify-center gap-2 text-sm font-medium px-4 py-2 disabled:opacity-60 disabled:cursor-not-allowed"
+        style={{
+          ...glassButton,
+          opacity: isAnalyzing ? 0.7 : 1,
+          cursor: isAnalyzing ? 'not-allowed' : 'pointer',
+          width: isMobile ? '100%' : undefined,
+        }}
       >
         {isAnalyzing && <Spinner />}
         {isAnalyzing ? 'Analyzing…' : `Analyze ${config.label}`}
